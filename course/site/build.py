@@ -15,7 +15,8 @@ from pathlib import Path
 
 SITE = Path(__file__).resolve().parent
 CAPS = json.loads((SITE / 'stills' / 'captions.json').read_text())
-VIDEO = 'https://youtu.be/Qy3_4oXoS6c'
+VIDEO_ID = 'Qy3_4oXoS6c'
+VIDEO = f'https://youtu.be/{VIDEO_ID}'
 # where the LAB links point: the notebooks folder next to the site locally; the Pages workflow points them at
 # GitHub's rendered notebook view instead
 NB = os.environ.get('BASELINE_NOTEBOOK_URL', '../notebooks')
@@ -188,6 +189,7 @@ FOOT = '''</main>
 def page(title: str, desc: str, body: str, on: str = '') -> str:
     links = [('index.html', 'Course')] + [(f'{m["slug"]}.html', f'M{m["n"]}') for m in MODULES] + [('glossary.html', 'Glossary'), ('reel.html', 'Reel')]
     nav = ''.join(f'<a href="{h}"{" class=on" if h == on else ""}>{t}</a>' for h, t in links)
+    nav += f'<a class="film" href="{VIDEO}" target="_blank" rel="noopener">Film ↗</a>'
     return HEAD.format(title=html.escape(title), desc=html.escape(desc), nav=nav) + body + FOOT.format(video=VIDEO, tip=TIP_JS)
 
 
@@ -244,7 +246,15 @@ def index_page() -> str:
 <section class="hero"><img src="stills/t005.50.jpg" alt="The film's first shot: a pen plotter draws y = 0, the first baseline" width="1600" height="900">
 <div class="over"><div class="label"><span class="now">A first ML course</span> · for software developers · self-paced</div>
 <h1>You were state of the art. <span class="mag">Now you're a baseline.</span></h1>
-<p><em>Baseline</em> is a 4-minute music video that walks through more than thirty machine-learning techniques in order, from the 1958 perceptron to attention and its linear-time successors, each one replaced by the next. This course teaches those ideas, anchored to the film: every concept comes with a still from the moment the film shows it, and a Jupyter lab where you build it.</p></div></section>
+<p><em>Baseline</em> is a 4-minute music video that walks through more than thirty machine-learning techniques in order, from the 1958 perceptron to attention and its linear-time successors, each one replaced by the next. This course teaches those ideas, anchored to the film: every concept comes with a still from the moment the film shows it, and a Jupyter lab where you build it.</p>
+<div class="cta"><a class="btn primary" href="{VIDEO}" target="_blank" rel="noopener">▶ Watch the film · 4:07</a><a class="btn" href="m0.html">Start with Module 0 →</a></div></div></section>
+
+<section class="film" id="film">
+<div class="label"><span class="now">The film</span> · <em>Baseline</em> · 4:07 · <a href="{VIDEO}" target="_blank" rel="noopener">open on YouTube ↗</a></div>
+<div class="player"><iframe src="https://www.youtube-nocookie.com/embed/{VIDEO_ID}?rel=0" title="Baseline, the music video" loading="lazy"
+  allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
+<p class="prose">Watch it once all the way through before you start. You won't follow most of it yet, and that's the point: by the end of the course every shot will make sense. After that, each module links to the stretches of the film it covers, and every still's timecode jumps to that exact moment.</p>
+</section>
 
 <div class="prose">
 <h2>How it works</h2>
