@@ -1,0 +1,48 @@
+# Publish the course site (course/site/) to GitHub Pages.
+# The pages are rebuilt from course/site/content.py so their LAB links open the notebooks in GitHub's notebook viewer.
+name: Course site
+
+on:
+  push:
+    branches: [course/ml-for-developers]
+    paths: ['course/site/**', 'course/notebooks/**', '.github/workflows/course-pages.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the pages
+        env:
+          BASELINE_NOTEBOOK_URL: ${{ github.server_url }}/${{ github.repository }}/blob/${{ github.ref_name }}/course/notebooks
+        run: python3 course/site/build.py
+      - name: Collect what gets published
+        run: |
+          mkdir _site
+          cp course/site/*.html course/site/style.css _site/
+          cp -r course/site/stills _site/stills
+          touch _site/.nojekyll
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

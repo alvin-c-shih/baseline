@@ -9,13 +9,16 @@ from __future__ import annotations
 
 import html
 import json
+import os
 import re
 from pathlib import Path
 
 SITE = Path(__file__).resolve().parent
 CAPS = json.loads((SITE / 'stills' / 'captions.json').read_text())
 VIDEO = 'https://youtu.be/Qy3_4oXoS6c'
-NB = '../notebooks'
+# where the LAB links point: the notebooks folder next to the site locally; the Pages workflow points them at
+# GitHub's rendered notebook view instead
+NB = os.environ.get('BASELINE_NOTEBOOK_URL', '../notebooks')
 
 # ── the song, as the course reads it: (start s, end s, label, module, chorus?) ──
 # Modules follow what depends on what, not film order, so one module can cover several stretches of the film.
