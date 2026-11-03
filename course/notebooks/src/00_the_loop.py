@@ -303,7 +303,7 @@ print(f'train loss {loss.item():.3f} · test accuracy {acc:.1%}')
 
 
 # %%
-still(140.3)
+still(140.79)
 
 
 
@@ -350,7 +350,7 @@ ax.set(xlabel='epoch', ylabel='test loss', title='SAME DATA, SAME EPOCHS, DIFFER
 
 
 # %%
-still(127.5)
+still(127.75)
 
 
 
@@ -434,7 +434,7 @@ a2.set(ylim=(-2, 2), title='TWO FITS'); a2.legend(fontsize=8);
 
 
 # %%
-still(47.0)
+still(47.53)
 
 
 

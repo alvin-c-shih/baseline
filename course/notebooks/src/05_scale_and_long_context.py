@@ -106,7 +106,7 @@ ax.set(xlabel='days in production', ylabel='total compute (10²⁴ FLOPs)', titl
 
 
 # %%
-still(211.0)
+still(211.64)
 
 
 
@@ -289,7 +289,7 @@ still(183.0)
 
 
 # %%
-still(189.2)
+still(189.77)
 
 
 
@@ -322,7 +322,7 @@ ax.set(xticks=range(len(CFG['niah_lengths'])), xticklabels=CFG['niah_lengths'], 
 
 
 # %%
-still(191.0)
+still(191.68)
 
 
 
@@ -390,7 +390,7 @@ ax.set(xscale='log', yscale='log', xlabel='sequence length n', ylabel='ms', titl
 
 
 # %%
-still(219.0)
+still(220.45)
 
 
 
@@ -434,7 +434,7 @@ still(227.0)
 
 
 # %%
-still(235.5)
+still(236.33)
 
 
 
@@ -471,4 +471,4 @@ still(235.5)
 
 
 # %%
-still(246.0)
+still(246.9)

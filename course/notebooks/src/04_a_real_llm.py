@@ -23,7 +23,7 @@ hardware_report()
 
 
 # %%
-still(160.5)
+still(161.07)
 
 
 
@@ -50,7 +50,7 @@ ax.set(title=f'P(NEXT TOKEN | "…just a")', xlabel='probability');
 
 
 # %%
-still(136.0)
+still(136.62)
 
 
 
@@ -107,7 +107,7 @@ print(f'final MSE {F.mse_loss(moe(x)[0], y).item():.3f}; each token uses 2/8 exp
 
 
 # %%
-still(138.5)
+still(139.05)
 
 
 
@@ -184,7 +184,7 @@ for k, v in results.items():
 
 
 # %%
-still(143.8)
+still(144.56)
 
 
 
@@ -273,7 +273,7 @@ for name in HELD_OUT:
 
 
 # %%
-still(146.0)
+still(146.3)
 
 
 
@@ -308,7 +308,7 @@ still(147.8)
 
 
 # %%
-still(172.5)
+still(172.64)
 
 
 
@@ -344,7 +344,7 @@ print('ranking:', ' ≻ '.join('ABCD'[i] for i in fitted.argsort(descending=True
 
 
 # %%
-still(176.5)
+still(177.13)
 
 
 

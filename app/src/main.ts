@@ -4,6 +4,7 @@ import { PW, PH, SCALE } from './engine/gl';
 import { makeTimeline } from './timeline';
 import { makeDirection } from './direction';
 import { loadEq } from './scenes/_eq';
+import { STILL } from './scenes/_v';
 
 const params = new URLSearchParams(location.search);
 const EXPORT = params.has('export');
@@ -90,6 +91,8 @@ function sender(url: string, inflight: number): Promise<Sender> {
   return s;
 }
 
+let singSaved: { w: import('./engine/lyrics').Word; start: number; end: number; syl?: [number, number][] }[] = [];
+
 function setupExport() {
   document.body.classList.add('export');
   window.__mv = {
@@ -101,6 +104,24 @@ function setupExport() {
     width: PW,
     height: PH,
     timeline: TIMELINE.map(({ id, start, end }) => ({ id, start, end })),
+    /**
+     * Course stills only (render.ts stills --sing): re-time lyric words a..b (global indices) so the phrase has just
+     * been sung at T: the words follow each other 0.09 s apart, and the last one is still being sung (lit, magenta)
+     * at T. unsing() puts the real timings back. The film never calls it.
+     */
+    sing(a: number, b: number, T: number) {
+      const ws = engine.lyrics.words;
+      singSaved = ws.slice(a, b + 1).map((w) => ({ w, start: w.start, end: w.end, syl: w.syl }));
+      const n = b - a + 1;
+      ws.slice(a, b + 1).forEach((w, k) => {
+        const s = T - 0.18 - (n - 1 - k) * 0.09, e = k === n - 1 ? s + 0.24 : s + 0.08;
+        w.syl = w.syl?.map(([x, y]) => [s + ((x - w.start) / (w.end - w.start)) * (e - s), s + ((y - w.start) / (w.end - w.start)) * (e - s)]);
+        w.start = s; w.end = e;
+      });
+    },
+    unsing() { for (const o of singSaved) Object.assign(o.w, { start: o.start, end: o.end, syl: o.syl }); singSaved = []; },
+    /** Course stills only (render.ts stills --fovk): widen the lens by k (1 = as filmed). */
+    fovK(k: number) { STILL.fovK = k; },
     /** Render a single frame at t (seeks as needed). */
     still(t: number, samples: number | AdaptiveSampling = 1, shutter = 0.5) { return engine.render(t, 1 / 60, true, samples, shutter); },
     /** The last rendered frame as a full-resolution (PW x PH) PNG, base64 (for stills at scale > 1). */

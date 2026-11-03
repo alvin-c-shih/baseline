@@ -75,6 +75,9 @@ const CAP = 0.72; // Archivo cap height / em
 
 /** True while a VScene draws its floor reflection (screen-space furniture skips itself then). */
 export let MIRRORING = false;
+/** Still-only settings (render.ts stills --fovk): a lens multiplier for frames whose text runs off the edge. The film
+ *  never sets it, so every video frame is unchanged. */
+export const STILL = { fovK: 1 };
 /** Text runs drawn this frame (screen boxes), for the overlap QA (render.ts textqa); filled only when TEXT_QA.on. */
 export const TEXT_QA: { on: boolean; runs: { scene: string; s: string; x0: number; y0: number; x1: number; y1: number; a: number; g: number[] }[]; rects: { scene: string; q: number[] }[] } = { on: false, runs: [], rects: [] };
 if (typeof window !== 'undefined') (window as any).__textqa = TEXT_QA;
@@ -139,7 +142,7 @@ export abstract class VScene extends D2Scene {
   setKey(k: Key) {
     const b = basis(k);
     this.R = b.R; this.U = b.U; this.Fw = b.F;
-    this.f = (H / 2) / Math.tan((k.fov * Math.PI) / 360);
+    this.f = (H / 2) / Math.tan((k.fov * STILL.fovK * Math.PI) / 360);
     if (MIRRORING && this.mirror) {
       // the mirror camera: position and basis reflected in y = my (a left-handed basis: points land where their
       // reflections appear to the real camera)

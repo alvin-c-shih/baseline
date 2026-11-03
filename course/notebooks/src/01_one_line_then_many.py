@@ -65,7 +65,7 @@ plt.tight_layout()
 
 
 # %%
-still(11.5)
+still(12.33)
 
 
 
@@ -165,7 +165,7 @@ check('xor_weights', xor_weights)
 
 
 # %%
-still(18.2)
+still(18.49)
 
 
 
@@ -225,7 +225,7 @@ still(19.5)
 
 
 # %%
-still(26.5)
+still(27.01)
 
 
 
@@ -314,7 +314,7 @@ for axis in (ax.xaxis, ax.yaxis, ax.zaxis):
 
 
 # %%
-still(34.0)
+still(34.41)
 
 
 
@@ -439,7 +439,7 @@ still(30.5)
 
 
 # %%
-still(35.5)
+still(36.03)
 
 
 
@@ -503,7 +503,7 @@ still(44.5)
 
 
 # %%
-still(54.5)
+still(55.26)
 
 
 

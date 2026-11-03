@@ -89,7 +89,7 @@ Each notebook was run top to bottom with nbconvert on an M1 Max with 64 GB. The 
 - **Notebooks**: edit `notebooks/src/*.py` (jupytext percent format), then run `sh build_notebooks.sh` to regenerate `notebooks/*.ipynb` without outputs. `--execute` also runs each notebook as a test, writing the executed copies to `.cache/executed/`.
 - **Site**: edit the modules, concepts and glossary in `site/content.py` (layout lives in `site/build.py`), then run `python3 site/build.py`. Mark glossary terms with `[[term]]` or `[[term|shown text]]`.
 - **Design decisions** and open questions: `DECISIONS.md`.
-- **Stills**: `site/stills/tSSS.ss.jpg` are 1600-px frames rendered from the film's engine with `cd app && bun scripts/render.ts stills --samples auto --max-samples 64 --t <times>`. Their captions live in `site/stills/captions.json`, which both the notebooks and the site read.
+- **Stills**: `site/stills/tSSS.ss.jpg` are 1600-px frames rendered from the film's engine. Re-render any of them with `python3 site/render_stills.py [times…]`, which reads `site/stills/captions.json`, including the two still-only liberties some entries use: `fovk` (a wider lens) and `sing` (a phrase re-timed to have just been sung). Their captions live in `site/stills/captions.json`, which both the notebooks and the site read.
 
 ## License
 

@@ -1,6 +1,8 @@
 #!/usr/bin/env bun
 // Offline renderer. Drives the app in headless Chrome (?export=1) and either
 //   stills:  bun scripts/render.ts stills --t 1.5,23,40.2 [--only id1,id2] [--out dir]
+//            [--sing "t:a-b,…"] [--fovk "t:k,…"]  course stills only: lyric words a..b (global indices) re-timed to have
+//            just been sung at t, and a lens k× wider at t, so a still can show a whole phrase; the film never uses them
 //   sheet:   bun scripts/render.ts sheet --from 20 --to 35 [--n 12] [--cols 4] [--tw 480] [--only ids] [--out file.png]   (or --times a,b,c | --cuts)
 //   plates:  bun scripts/render.ts plates   (renders one representative JPEG per plate into public/plates/ (used by the outro's rewind), times from plates.json or entry midpoints)
 //   perf:    bun scripts/render.ts perf --from 20 --to 25 [--only ids] [--samples 1] [--shutter 0.5]   (avg ms per frame incl. GPU sync and the export's pixel readback)
@@ -118,8 +120,16 @@ async function openPage(url: string, over: { scene?: string | null; sp?: string 
 async function stills(page: Page, times: number[], outDir: string) {
   mkdirSync(outDir, { recursive: true });
   const files: string[] = [];
+  // course stills: --sing "t:a-b,…" re-times lyric words a..b to have just been sung at t; --fovk "t:k,…" widens the lens
+  const perT = (spec?: string) => new Map((spec ?? '').split(',').filter(Boolean).map((e) => { const [t, v] = e.split(':'); return [(+t!).toFixed(2), v!] as const; }));
+  const sing = perT(opt('sing')), fovk = perT(opt('fovk'));
   for (const t of times) {
+    const key = t.toFixed(2), sg = sing.get(key), fk = fovk.get(key);
+    if (sg) { const [a, b] = sg.split('-').map(Number); await page.evaluate(([a, b, t]) => (window as any).__mv.sing(a, b, t), [a!, b!, t] as const); }
+    if (fk) await page.evaluate((k) => (window as any).__mv.fovK(k), +fk);
     const k: number = await page.evaluate(([t, s, sh]) => (window as any).__mv.still(t, s, sh), [t, SAMPLES, +opt('shutter', '0.5')!] as const);
+    if (sg) await page.evaluate(() => (window as any).__mv.unsing());
+    if (fk) await page.evaluate(() => (window as any).__mv.fovK(1));
     const f = path.join(outDir, `f_${t.toFixed(2).padStart(7, '0')}.png`);
     if (typeof SAMPLES !== 'number') console.log(`t=${t}: ${k} sub-frames`);
     // at scale > 1 the canvas is shown downscaled on the page: save the full-res pixel buffer instead

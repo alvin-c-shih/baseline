@@ -60,7 +60,7 @@ SCORES = {}      # model name -> validation loss; we fill this in as we go
 
 
 # %%
-still(62.5)
+still(63.38)
 
 
 
@@ -214,7 +214,7 @@ fig.suptitle('LSTM GATES · 24 UNITS × 1 LINE', x=0.01, ha='left', color=BONE, 
 
 
 # %%
-still(74.0)
+still(74.05)
 
 
 
@@ -349,7 +349,7 @@ check('attention_row', attention_row)
 
 
 # %%
-still(88.0)
+still(87.7)
 
 # > **Predict first.** On the `laptop` tier the LSTM above reached its validation loss with about 0.35M parameters. Will this Transformer, with about 0.8M, beat it clearly, tie, or lose?
 
@@ -460,7 +460,7 @@ for ax, (title, m) in zip(axes, [('BERT · BIDIRECTIONAL', np.ones((n, n))), ('G
 
 
 # %%
-still(164.0)
+still(164.49)
 
 
 
@@ -495,7 +495,7 @@ still(168.2)
 
 
 # %%
-still(129.3)
+still(129.9)
 
 
 
