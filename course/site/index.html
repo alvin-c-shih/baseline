@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Baseline · ML for Developers</title>
+<meta name="description" content="A first machine-learning course for software developers, taught through the Baseline music video.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..900&family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true}]})"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="bar">
+  <a class="brand" href="index.html">BASE<b>LINE</b> · ML</a>
+  <nav><a href="index.html" class=on>Course</a><a href="m0.html">M0</a><a href="m1.html">M1</a><a href="m2.html">M2</a><a href="m3.html">M3</a><a href="m4.html">M4</a><a href="m5.html">M5</a><a href="glossary.html">Glossary</a><a href="reel.html">Reel</a></nav>
+</header>
+<main>
+
+<section class="hero"><img src="stills/t005.50.jpg" alt="The film's first shot: a pen plotter draws y = 0, the first baseline" width="1600" height="900">
+<div class="over"><div class="label"><span class="now">A first ML course</span> · for software developers · self-paced</div>
+<h1>You were state of the art. <span class="mag">Now you're a baseline.</span></h1>
+<p><em>Baseline</em> is a 4-minute music video that walks through more than thirty machine-learning techniques in order, from the 1958 perceptron to attention and its linear-time successors, each one replaced by the next. This course uses it as a syllabus. Every module pairs a section of the film with the ideas behind it and a Jupyter lab where you build them.</p></div></section>
+
+<div class="prose">
+<h2>How it works</h2>
+<p><strong>Watch</strong> the section of the film (each module links to its timestamp). <strong>Read</strong> the module page: every concept is anchored to a still from the film, so you always know where you are. <strong>Run</strong> the lab notebook: you build each technique yourself, at a size that fits your machine, and see the same kind of real numbers the film puts on screen.</p>
+<p>No ML background is assumed. You need to read Python and be comfortable at a terminal. The math is shown, but each idea is also explained in code.</p>
+</div>
+
+<h2>The song is the syllabus</h2>
+<div class="timeline" role="img" aria-label="The song, colored by module"><a href="m1.html" class="" style="left:0.000%;width:15.740%" title="VERSE 1 · 0:00–0:38 · Module 1"><span class="n">1</span>VERSE 1</a><a href="m1.html" class="" style="left:15.740%;width:2.791%" title="DEPTH · 0:38–0:45 · Module 1"><span class="n">1</span></a><a href="m0.html" class="chorus" style="left:18.532%;width:5.955%" title="CHORUS · 0:45–1:00 · Module 0"><span class="n">0</span></a><a href="m2.html" class="" style="left:24.486%;width:12.071%" title="VERSE 2 · 1:00–1:30 · Module 2"><span class="n">2</span>VERSE 2</a><a href="m2.html" class="" style="left:36.557%;width:2.779%" title="MEMORY · 1:30–1:37 · Module 2"><span class="n">2</span></a><a href="m2.html" class="chorus" style="left:39.337%;width:9.061%" title="CHORUS · GONE · 1:37–1:59 · Module 2"><span class="n">2</span>CHORUS · GONE</a><a href="m3.html" class="" style="left:48.398%;width:11.602%" title="VERSE 3 · 1:59–2:28 · Module 3"><span class="n">3</span>VERSE 3</a><a href="m2.html" class="" style="left:60.000%;width:2.937%" title="ATTN · 2:28–2:35 · Module 2"><span class="n">2</span></a><a href="m4.html" class="chorus" style="left:62.937%;width:6.044%" title="CHORUS · BERT · 2:35–2:50 · Module 4"><span class="n">4</span></a><a href="m4.html" class="" style="left:68.981%;width:11.513%" title="BRIDGE · 2:50–3:18 · Module 4"><span class="n">4</span>BRIDGE</a><a href="m5.html" class="" style="left:80.494%;width:2.913%" title="SCALE · 3:18–3:26 · Module 5"><span class="n">5</span></a><a href="m5.html" class="chorus" style="left:83.406%;width:5.825%" title="CHORUS · 3:26–3:40 · Module 5"><span class="n">5</span></a><a href="m5.html" class="" style="left:89.231%;width:10.769%" title="FOOTNOTE · FALL · 3:40–4:07 · Module 5"><span class="n">5</span>FOOTNOTE · FALL</a></div><div class="ticks"><span>0:00</span><span>1:00</span><span>2:00</span><span>3:00</span><span>4:00</span></div>
+<div class="cards"><a class="card" href="m0.html"><img src="stills/t052.80.jpg" alt="" loading="lazy" width="1600" height="900"><div class="body"><div class="label"><span class="now">M0</span> · Chorus · THE BOARD · 0:45–1:00</div><h3>The Loop</h3><p>Model, loss, gradient descent, train/val/test, overfitting, benchmarks. The loop every later technique shares.</p></div></a><a class="card" href="m1.html"><img src="stills/t030.50.jpg" alt="" loading="lazy" width="1600" height="900"><div class="body"><div class="label"><span class="now">M1</span> · Verse 1 + DEPTH · 0:00–0:45</div><h3>One Line, Then Many</h3><p>Perceptron, XOR, backprop, vanishing gradients, ReLU, HOG vs CNN on CIFAR-10, SVMs and kernels, residual depth.</p></div></a><a class="card" href="m2.html"><img src="stills/t081.80.jpg" alt="" loading="lazy" width="1600" height="900"><div class="body"><div class="label"><span class="now">M2</span> · Verse 2 + MEMORY + GONE · 1:00–1:59</div><h3>The Night Line: Sequences</h3><p>Tokens, n-grams, RNNs and BPTT, LSTM gates, the seq2seq bottleneck, attention, a tiny GPT. All scored on one leaderboard.</p></div></a><a class="card" href="m3.html"><img src="stills/t143.80.jpg" alt="" loading="lazy" width="1600" height="900"><div class="body"><div class="label"><span class="now">M3</span> · Verse 3 · 1:59–2:28</div><h3>The Lab: Generation and Efficiency</h3><p>GAN vs diffusion, RoPE, RMSNorm, SwiGLU, mixture of experts, INT4 quantization of a real LLM, LoRA, in-context learning.</p></div></a><a class="card" href="m4.html"><img src="stills/t179.00.jpg" alt="" loading="lazy" width="1600" height="900"><div class="body"><div class="label"><span class="now">M4</span> · Chorus 3 · BERT + Bridge · 2:35–3:18</div><h3>Both Ways, the Plant, the Tape</h3><p>BERT vs decoder-only, Bradley–Terry reward models, DPO on a real LLM, FlashAttention from scratch, needle-in-a-haystack.</p></div></a><a class="card" href="m5.html"><img src="stills/t215.80.jpg" alt="" loading="lazy" width="1600" height="900"><div class="body"><div class="label"><span class="now">M5</span> · SCALE → the end · 3:18–4:07</div><h3>Scale, Pressure, Footnote</h3><p>Fit a scaling law on your own machine, the O(n²) pressure and the KV cache, linear attention, and the case for always running a baseline.</p></div></a></div>
+
+<div class="prose">
+<h2 id="setup">Setup</h2>
+<p>You need Python 3.11+ and <a href="https://docs.astral.sh/uv/">uv</a>. From the repository root:</p>
+<pre><code>cd course
+uv sync                         # torch, transformers, scikit-learn, jupyterlab …
+uv run jupyter lab notebooks/   # open 00_the_loop.ipynb first</code></pre>
+<p>Each notebook detects your hardware and picks a <strong>tier</strong>. Every lab reads its model sizes from that tier, so the same notebook runs everywhere:</p>
+<div class="scroll"><table>
+<tr><th>Tier</th><th>Detected when</th><th>What you get</th><th>Downloads</th></tr>
+<tr><td><code>laptop</code></td><td>anything else (CPU, or a base Apple-silicon GPU)</td><td>small nets, data subsets, Qwen2.5-0.5B. Each lab runs in minutes; tested on CPU.</td><td>≈ 2.5 GB</td></tr>
+<tr><td><code>mac-max</code></td><td>Apple MPS with ≥ 32 GB unified memory</td><td>wider and deeper nets, full CIFAR-10 with residual blocks, Qwen2.5-1.5B, 16K-token haystacks</td><td>≈ 5 GB</td></tr>
+<tr><td><code>cuda</code></td><td>NVIDIA GPU with ≥ 12 GB VRAM</td><td>biggest configs, Qwen2.5-7B in bf16, 32K-token haystacks</td><td>≈ 17 GB</td></tr>
+</table></div>
+<p>To force a tier or device, set it before launching: <code>BASELINE_TIER=laptop BASELINE_DEVICE=cpu uv run jupyter lab notebooks/</code>. The sizes live in one table, <code>TIERS</code> in <code>notebooks/blcourse.py</code>, so change it if you want to experiment.</p>
+
+<h2>Self-paced plan</h2>
+<div class="scroll"><table>
+<tr><th>Module</th><th>Read</th><th>Lab (laptop tier, measured)</th><th>You will have built</th></tr>
+<tr><td>M0 · The Loop</td><td>25 min</td><td>&lt; 1 min</td><td>hand-written digit rules vs a learned template; gradient descent by hand; an overfitting curve</td></tr>
+<tr><td>M1 · One Line, Then Many</td><td>45 min</td><td>≈ 3.5 min</td><td>backprop in numpy; HOG + SVM vs a CNN on CIFAR-10; a residual net</td></tr>
+<tr><td>M2 · Sequences</td><td>60 min</td><td>≈ 4 min (CPU) / 2 min (laptop GPU)</td><td>n-grams, an LSTM, seq2seq ± attention, a tiny GPT, one leaderboard</td></tr>
+<tr><td>M3 · The Lab</td><td>60 min</td><td>≈ 2 min + LLM download</td><td>GAN vs DDPM, RoPE, MoE, INT4 quantization and LoRA on a real LLM</td></tr>
+<tr><td>M4 · Bridge</td><td>45 min</td><td>≈ 3.5 min (CPU) / 1 min (laptop GPU)</td><td>a Bradley–Terry fit, DPO, FlashAttention from scratch, a needle-in-a-haystack map</td></tr>
+<tr><td>M5 · Scale</td><td>30 min</td><td>≈ 2 min</td><td>your own scaling law, linear attention, a final project plan</td></tr>
+</table></div>
+<p>Every module ends with checkpoint questions, and most labs have a <em>Try it</em> with a hidden answer. The <a href="reel.html">reel</a> lists every still in film order, with the module that explains it.</p>
+</div>
+</main>
+<footer>
+  A first machine-learning course built on the music video <a href="https://youtu.be/Qy3_4oXoS6c">Baseline</a>. Stills are rendered from the film's engine (<code>app/</code>).
+  Course text and code: MIT. The song and its lyrics are not covered by the MIT license; see <code>LICENSE-SONG.md</code>.
+</footer>
+<script>
+/* Glossary terms: hover or keyboard focus shows the definition; on touch screens the first tap shows it and a
+   second tap opens the glossary entry. Without JS the native title tooltip and the link still work. */
+(() => {
+  const tip = document.createElement('div'); tip.id = 'tip'; tip.setAttribute('role', 'tooltip'); document.body.append(tip);
+  const touch = matchMedia('(hover: none)').matches; let cur = null;
+  const show = el => {
+    cur = el; tip.textContent = el.dataset.def; tip.style.maxWidth = Math.min(300, innerWidth - 24) + 'px'; tip.classList.add('on');
+    el.setAttribute('aria-describedby', 'tip');
+    const r = el.getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight;
+    const x = Math.max(12, Math.min(r.left + r.width / 2 - tw / 2, innerWidth - tw - 12));
+    let y = r.top - th - 8; if (y < 52) y = r.bottom + 8;
+    tip.style.left = x + 'px'; tip.style.top = y + 'px';
+  };
+  const hide = () => { if (cur) cur.removeAttribute('aria-describedby'); cur = null; tip.classList.remove('on'); };
+  for (const el of document.querySelectorAll('.term')) {
+    el.dataset.def = el.title; el.removeAttribute('title');
+    if (!touch) {    // touch browsers fire a synthetic mouseenter before click, so hover handlers stay off there
+      el.addEventListener('mouseenter', () => show(el)); el.addEventListener('mouseleave', hide);
+      el.addEventListener('focus', () => show(el)); el.addEventListener('blur', hide);
+    }
+    el.addEventListener('click', e => { if (touch && cur !== el) { e.preventDefault(); show(el); } });
+  }
+  addEventListener('scroll', hide, { passive: true });
+  addEventListener('keydown', e => { if (e.key === 'Escape') hide(); });
+  document.addEventListener('click', e => { if (cur && !e.target.closest('.term')) hide(); });
+})();
+</script>
+</body>
+</html>

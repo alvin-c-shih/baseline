@@ -1,0 +1,205 @@
+# %% [markdown]
+# # Module 5 · Scale, Pressure, Footnote
+# **Pre-chorus 4 "SCALE" → the end · 3:19–4:07**
+#
+# The last claim is the biggest one: *scale is all you need*. You'll measure a scaling law on your own machine, see why attention's O(n²) cost is the pressure point, build a linear-time alternative, and finish with the song's actual lesson: every state of the art becomes a baseline, and baselines are still worth running.
+
+# %%
+import sys; sys.path.insert(0, '.')
+from blcourse import *
+import matplotlib.pyplot as plt
+hardware_report()
+
+# %% [markdown]
+# ## 5.1 Scale is all you need: a scaling law on your laptop
+# Kaplan et al. (2020) trained hundreds of language models and found that loss falls as a smooth **power law** in model size N, data D and compute C, over seven orders of magnitude:
+#
+# $$L(N) \approx \left(\frac{N_c}{N}\right)^{\alpha_N} \quad (\alpha_N \approx 0.076) \qquad C \approx 6ND$$
+#
+# Chinchilla (2022) corrected the recipe: for a fixed compute budget, grow data as fast as parameters, at roughly 20 tokens per parameter.
+#
+# We'll train the same TinyGPT at several widths, on the same data and number of steps, and fit a power law with an irreducible floor: L = a·N^(−α) + c.
+
+# %%
+still(202.0)
+
+# %%
+data = CharData(shakespeare())
+G = CFG['gpt']; runs = []
+for width in CFG['scaling_widths']:
+    seed(0)
+    m = TinyGPT(data.vocab, n_layer=4, n_head=4, n_embd=width, block=128)
+    N = n_params(m) - m.tok.weight.numel() - m.pos.weight.numel()    # non-embedding parameters, as in Kaplan et al.
+    t0 = time.perf_counter()
+    hist = train_lm(m, data, CFG['scaling_steps'], 128, 32, lr=3e-3, log_every=CFG['scaling_steps'], label=f'width {width:3d}')
+    tokens = CFG['scaling_steps'] * 128 * 32
+    runs.append(dict(width=width, N=N, val=hist[-1][2], flops=6 * N * tokens, secs=time.perf_counter() - t0))
+    del m
+
+# %%
+from scipy.optimize import curve_fit
+Ns = np.array([r['N'] for r in runs], float); Ls = np.array([r['val'] for r in runs])
+law = lambda n, a, alpha, c: a * n ** (-alpha) + c
+# a loss floor must lie between 0 and the best loss we've seen; the exponent stays in a sane range
+(a, alpha, c), _ = curve_fit(law, Ns, Ls, p0=(10, 0.3, 0.5 * Ls.min()), bounds=([0, 0, 0], [np.inf, 2, Ls.min()]), maxfev=20000)
+fig, ax = plt.subplots()
+ax.scatter(Ns, Ls, c=MAG, s=40, zorder=3)
+nn_ = np.geomspace(Ns.min() / 2, Ns.max() * 20, 100)
+ax.plot(nn_, law(nn_, a, alpha, c), c=BONE, lw=1.2, label=f'fit: L = {a:.2f}·N^−{alpha:.3f} + {c:.2f}')
+ax.axhline(c, c=GRAPHITE, ls=':', lw=1)
+ax.set(xscale='log', yscale='log', xlabel='non-embedding parameters N', ylabel='val loss (nats/char)', title='YOUR SCALING LAW'); ax.legend(fontsize=8)
+for r in runs:
+    print(f"width {r['width']:3d}: N = {r['N']:>9,}  val {r['val']:.3f}  ≈{r['flops']:.1e} FLOPs  {r['secs']:.0f}s")
+print(f'extrapolated: 10× the largest model → {law(Ns.max() * 10, a, alpha, c):.3f}  (floor c = {c:.2f})')
+
+# %% [markdown]
+# **Read the fit skeptically.** On the `laptop` tier the exponent typically lands near 0.1, close to Kaplan's 0.076, but that's partly luck: character-level data, a fixed small step budget, and only five points all move it, and with this little data the floor c is barely constrained. The bigger models here are also *undertrained* (same steps for everyone), which is exactly Chinchilla's point. Still, the shape holds: steady returns per doubling, slowly flattening toward a floor. The film's gauge reads "−3.4% per doubling" with the nameplate EXTRAPOLATED.
+#
+# ### Try it
+# Double `CFG['scaling_steps']` and rerun. Which models improve most, and what does that tell you about compute-optimal size?
+#
+# ### Train once, serve forever: when Chinchilla isn't the right answer
+# Chinchilla minimizes the *training* bill for a target loss. But a deployed model is trained once and then runs on every request. Think of `-O3`: worth the extra compile time only for a binary you'll run many times. Training costs about 6·N·D FLOPs, and every generated token costs about 2·N. Compare a compute-optimal 70B with an "overtrained" 8B that got a similar training budget:
+
+# %%
+def train_flops(N, D): return 6 * N * D
+def serve_flops(N, tokens): return 2 * N * tokens
+
+models = {'Chinchilla-style 70B · 1.4T tokens': (70e9, 1.4e12), 'Llama-3-style 8B · 15T tokens': (8e9, 15e12)}
+served_per_day = 1e12                                         # a popular product: a trillion tokens a day
+for name, (N, D) in models.items():
+    t, s = train_flops(N, D), serve_flops(N, served_per_day)
+    print(f'{name:36s} train {t:.1e}  serve/day {s:.1e}  → serving equals training after {t / s:5.1f} days')
+
+days = np.arange(0, 366)
+fig, ax = plt.subplots()
+for (name, (N, D)), c in zip(models.items(), (ASH, MAG)):
+    ax.plot(days, (train_flops(N, D) + serve_flops(N, served_per_day) * days) / 1e24, c=c, label=name)
+ax.set(xlabel='days in production', ylabel='total compute (10²⁴ FLOPs)', title='TRAINING + SERVING'); ax.legend(fontsize=8);
+
+# %% [markdown]
+# The two training bills are about the same, but the 8B serves each token for about a ninth of the compute, and the gap grows every day it's in production. That's why widely deployed models are usually small ones trained far past the Chinchilla point. The price is a somewhat higher loss than the 70B would reach. Change `served_per_day` to 1e9 (a niche internal tool) and see how the answer changes.
+
+# %%
+still(211.0)
+
+# %% [markdown]
+# ## 5.2 And you, attention: quadratic in the length
+# Self-attention compares every token with every other token: n² scores per head per layer. Double the context and the attention cost goes up 4×. FlashAttention (Module 4) fixed the *memory* traffic, not the *arithmetic*.
+#
+# During generation there's a second cost: the **KV cache**. To produce token n+1, the model needs the keys and values of all n previous tokens, so memory grows linearly with context:
+
+# %%
+def kv_cache_gb(n_tokens, layers=32, kv_heads=8, head_dim=128, bytes_=2):
+    return 2 * layers * kv_heads * head_dim * bytes_ * n_tokens / 2**30          # K and V, every layer
+for n in (2_048, 32_768, 131_072, 1_048_576):
+    print(f'{n:>9,} tokens: KV cache ≈ {kv_cache_gb(n):6.1f} GB  (a 7–8B-class model with grouped-query attention, bf16)')
+
+# %%
+still(215.8)
+
+# %% [markdown]
+# ## 5.3 A linear-time successor, training up its strength
+# Recurrent models had a fixed-size state and O(n) cost. Their problems were sequential training and forgetting. A family of newer models brings the recurrence back in a form that trains in parallel: **linear attention**, **state-space models** (S4, Mamba), **RWKV**, and gated variants. The simplest is linear attention (Katharopoulos et al., 2020). Drop the softmax, use a positive feature map φ, and associativity lets you carry a d × d running state instead of all past keys:
+#
+# $$o_t = \frac{\phi(q_t)^\top S_t}{\phi(q_t)^\top z_t}, \qquad S_t = S_{t-1} + \phi(k_t)\,v_t^\top, \quad z_t = z_{t-1} + \phi(k_t)$$
+#
+# Per token, that's constant work and constant memory, whatever the context length. Training uses a **chunked** form: exact attention inside each chunk, plus the carried state between chunks.
+
+# %%
+phi = lambda x: F.elu(x) + 1
+
+def linear_attention_chunked(q, k, v, chunk=128):
+    q, k = phi(q), phi(k)
+    B, H, n, d = q.shape
+    S = torch.zeros(B, H, d, v.shape[-1], device=q.device); z = torch.zeros(B, H, d, device=q.device)
+    mask = torch.tril(torch.ones(chunk, chunk, device=q.device))
+    out = []
+    for i in range(0, n, chunk):
+        qc, kc, vc = q[..., i:i + chunk, :], k[..., i:i + chunk, :], v[..., i:i + chunk, :]
+        c = qc.shape[-2]; A = (qc @ kc.transpose(-1, -2)) * mask[:c, :c]          # causal, within the chunk
+        num = qc @ S + A @ vc
+        den = (qc @ z[..., None])[..., 0] + A.sum(-1)
+        out.append(num / den[..., None])
+        S = S + kc.transpose(-1, -2) @ vc; z = z + kc.sum(-2)                      # carry the state forward
+    return torch.cat(out, -2)
+
+def linear_attention_reference(q, k, v):                                         # O(n²) form, for checking
+    q, k = phi(q), phi(k)
+    A = torch.tril(q @ k.transpose(-1, -2))
+    return (A @ v) / A.sum(-1, keepdim=True)
+
+seed(0); q, k, v = (torch.randn(1, 2, 300, 32, device=DEVICE) for _ in range(3))
+print('chunked vs reference, max abs diff:', (linear_attention_chunked(q, k, v) - linear_attention_reference(q, k, v)).abs().max().item())
+
+# %%
+def bench(fn, n, H=4, d=64, reps=3):
+    q, k, v = (torch.randn(1, H, n, d, device=DEVICE) for _ in range(3))
+    fn(q, k, v); sync(); t0 = time.perf_counter()
+    for _ in range(reps):
+        fn(q, k, v)
+    sync(); return (time.perf_counter() - t0) / reps * 1e3
+
+lengths = [n * 2 for n in CFG['attn_lengths']]
+soft = [bench(lambda q, k, v: F.scaled_dot_product_attention(q, k, v, is_causal=True), n) for n in lengths]
+lin = [bench(linear_attention_chunked, n) for n in lengths]
+fig, ax = plt.subplots()
+ax.plot(lengths, soft, 'o-', c=ASH, label='softmax attention (fused, causal)')
+ax.plot(lengths, lin, 'o-', c=MAG, label='linear attention (chunked, plain PyTorch)')
+ax.plot(lengths, [soft[0] * (n / lengths[0]) ** 2 for n in lengths], ':', c=GRAPHITE, label='∝ n²')
+ax.plot(lengths, [lin[0] * (n / lengths[0]) for n in lengths], '--', c=GRAPHITE, label='∝ n')
+ax.set(xscale='log', yscale='log', xlabel='sequence length n', ylabel='ms', title='QUADRATIC VS LINEAR'); ax.legend(fontsize=8);
+
+# %% [markdown]
+# A highly optimized fused kernel can beat plain-PyTorch linear attention at short lengths. Watch the slopes, though: one curve tracks n², the other n, so past some length the linear one always wins. Whether linear-time models match attention's *quality* is still open. Pure linear attention recalls exact tokens worse, which is why most current long-context models are **hybrids** that mix a few attention layers with many linear or state-space layers. The song puts it as a successor "training up its strength".
+
+# %%
+still(219.0)
+
+# %% [markdown]
+# ## 5.4 Every "all you need" becomes a footnote
+# The song's four claims, each a paper with a date:
+#
+# | claim | paper | date | what replaced or absorbed it |
+# |---|---|---|---|
+# | Memory's all you need | LSTM, Hochreiter & Schmidhuber | 1997-11-15 | attention / Transformers |
+# | Depth is all you need | ResNet, He et al. | 2015-12-10 | the residual stream lives on in every Transformer |
+# | Attention's all you need | Transformer, Vaswani et al. | 2017-06-12 | still standing; hybrids with linear-time layers are rising |
+# | Scale is all you need | Scaling laws, Kaplan et al. | 2020-01-23 | Chinchilla's data-optimal scaling, then test-time compute |
+
+# %%
+still(224.0)
+
+# %% [markdown]
+# ### The developer's takeaway: always run the baseline
+# "Baseline" is the song's insult, but in practice it's the most useful word in this course. Before you reach for a large model, **build the cheapest thing that could work, and measure it on a held-out set**:
+#
+# | if your problem is… | try this baseline first | covered in |
+# |---|---|---|
+# | tabular data (rows and columns) | gradient-boosted trees or logistic regression. These still often beat deep nets here | 0, 1 |
+# | text classification | TF-IDF + linear model, or embeddings + logistic regression | 1, 2 |
+# | autocomplete over a small domain | n-gram counts | 2 |
+# | "make the LLM answer in our format" | a few-shot prompt, then LoRA | 3 |
+# | "make the LLM know our documents" | retrieval into the prompt, not fine-tuning | 3, 4 |
+#
+# A baseline tells you whether the fancy model is earning its cost, and it's how every number on every leaderboard in this song was judged.
+
+# %%
+still(227.0)
+
+# %%
+still(235.5)
+
+# %% [markdown]
+# ### Final project (self-paced)
+# Pick a small dataset you care about: your team's support tickets, commit messages, log lines, product reviews. Then:
+# 1. Split it into train / validation / test (Module 0).
+# 2. Build the dumbest reasonable baseline and record its validation score.
+# 3. Try a few-shot prompt with this course's LLM. Score it the same way.
+# 4. If it's worth it, LoRA-fine-tune (Module 3) and score again.
+# 5. Report all three on the **test** set once, in a little leaderboard of your own. Magenta goes on the winner.
+#
+# Then wait for the next deadline.
+
+# %%
+still(246.0)

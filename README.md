@@ -115,6 +115,7 @@
 | [docs/SHOTLIST.md](docs/SHOTLIST.md) | 分鏡表：25 個場景、118 個鏡頭，每個鏡頭的時間、唱到的字與畫面；[docs/frames/](docs/frames/) 是每秒一格的縮圖 |
 | [docs/MAKING.md](docs/MAKING.md) | 怎麼做的：歌、逐字對齊、真實資料、公式、引擎架構、算圖、品質檢查、改版歷程 |
 | [docs/DESCRIPTION.md](docs/DESCRIPTION.md) | 影片簡介（中英）、章節、歌詞、製作名單、標籤 |
+| [course/](course/README.md) | 給軟體工程師的機器學習入門課（英文）：六個單元對應影片段落，附 Jupyter 實作筆記本，依硬體自動調整模型大小 |
 
 ## 目錄
 

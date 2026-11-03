@@ -23,3 +23,8 @@ tools/data/conv1_runB/
 tools/data/conv1_seq/
 tools/data/ibp/
 tools/data/tiny_tf/
+
+# course: Python env, downloaded datasets, executed test copies (regenerable)
+course/.venv/
+course/.cache/
+course/notebooks/.ipynb_checkpoints/
