@@ -481,12 +481,42 @@ def answer_logprob(model, ids, n_prompt: int):
     return lp[:, n_prompt - 1:].sum(-1)
 
 
+def check(name: str, attempt) -> None:
+    """Run exercise `name`'s tests (exercises.py) against your attempt and say how it went. Never raises, so the
+    notebook keeps running. With BASELINE_SOLUTIONS=1 the reference solution is tested instead (course self-test)."""
+    import exercises
+    test = exercises.TESTS[name]
+    if os.environ.get('BASELINE_SOLUTIONS') == '1':
+        test(exercises.SOLUTIONS[name])             # a wrong test or reference must fail loudly here
+        print(f'✓ {name}: reference solution passes (BASELINE_SOLUTIONS=1)')
+        return
+    try:
+        test(attempt)
+    except NotImplementedError:
+        print(f'⏳ {name}: not attempted yet. Fill in the code above and rerun this cell. '
+              f'(Stuck? The reference solution is in notebooks/exercises.py.)')
+    except AssertionError as e:
+        print(f'✗ {name}: not yet. {e}')
+    except Exception as e:
+        print(f'✗ {name}: your code raised {type(e).__name__}: {e}')
+    else:
+        print(f'✓ {name}: passed.')
+
+
+def reset_lora(layers) -> None:
+    """Zero every LoRA patch (B = 0) and re-draw A, so the model is back to its base weights with a fresh patch."""
+    with torch.no_grad():
+        for l in layers:
+            l.B.zero_()
+            l.A.normal_(0, 1 / math.sqrt(l.A.shape[1]))
+
+
 use_style()
 
 __all__ = [
     'TIER', 'TIERS', 'CFG', 'DEVICE', 'CACHE', 'hardware_report', 'seed', 'timer', 'sync', 'use_style', 'still', 'fetch',
     'shakespeare', 'cifar10', 'CIFAR10_CLASSES', 'CharData', 'TinyGPT', 'n_params', 'eval_loss', 'train_lm', 'load_llm', 'chat',
-    'LoRALinear', 'add_lora', 'lora_disabled', 'chat_ids', 'answer_logprob',
+    'LoRALinear', 'add_lora', 'lora_disabled', 'reset_lora', 'chat_ids', 'answer_logprob', 'check',
     'INK', 'INK2', 'PANEL', 'LINE', 'GRAPHITE', 'ASH', 'BONE', 'MAG', 'MAG_HOT', 'MAG_DEEP', 'MAG_DARK',
     'np', 'torch', 'nn', 'F', 'math', 'time',
 ]

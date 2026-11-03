@@ -4,9 +4,13 @@
 #
 # Images have a fixed size. Text, audio and code are **sequences** of varying length, where order matters. Verse 2 is a night train: each car is one sung word, and four generations of machinery ride along it. You'll build each of them and score them all on the same held-out text:
 #
-# n-gram counting → RNN (and why it forgets) → LSTM gates → seq2seq's bottleneck → attention → the Transformer.
+# n-gram counting → RNN (and why it forgets) → LSTM gates → seq2seq's bottleneck → attention → the Transformer → encoder vs decoder (BERT vs GPT) → the parts that changed between 2017 and today's LLMs.
 #
-# **Runtime:** about 10–15 minutes on the `laptop` tier on CPU, much less on a GPU.
+# It builds on Module 0's classification loss (predicting the next character is a 65-way classification) and its tensor shapes: text batches are (B, T) integers, and (B, T, C) once embedded.
+#
+# **Runtime:** about 4–5 minutes on the `laptop` tier on CPU, plus a 260 MB DistilBERT download in §2.7.
+
+
 
 # %%
 import sys; sys.path.insert(0, '.')
@@ -15,9 +19,13 @@ import matplotlib.pyplot as plt
 from collections import Counter, defaultdict
 hardware_report()
 
+
+
 # %% [markdown]
 # ## 2.1 Tokens: turning text into integers
 # Models consume numbers, so text is first split into **tokens**, each mapped to an integer ID. Our own models will use the simplest tokenizer, one token per character. Production LLMs use **byte-pair encoding (BPE)**, which merges frequent character runs into sub-word tokens. Here's how a real LLM tokenizer sees the chorus line (the first run downloads a few MB):
+
+
 
 # %%
 from transformers import AutoTokenizer
@@ -28,10 +36,14 @@ print(len(line), 'characters →', len(ids), 'BPE tokens')
 print(' | '.join(llm_tok.decode([i]) for i in ids))
 print(ids)
 
+
+
 # %% [markdown]
 # Our corpus is *Tiny Shakespeare* (about 1 MB of public-domain plays). We hold out the last 10% as the **validation** set, and every model in this module is scored on it in the same unit: **<abbr title="Minus the log of the probability the model gave to the right answer, averaged.">cross-entropy</abbr> in <abbr title="A unit for measuring surprise, like bits but using the natural log: 1 nat ≈ 1.44 bits.">nats</abbr> per character**. Lower is better.
 #
 # *What's a nat?* It's a unit of surprise, like a bit but using the natural log (1 nat ≈ 1.44 bits). A loss of L nats means the model is about as unsure as if it were choosing among e<sup>L</sup> equally likely characters. That number, e<sup>L</sup>, is called the **perplexity**. Random guessing among the vocabulary scores ln(vocab size).
+
+
 
 # %%
 text = shakespeare()
@@ -40,11 +52,17 @@ print(f'{len(text):,} chars · vocab {data.vocab} · random-guess loss ln({data.
 print(text[:250])
 SCORES = {}      # model name -> validation loss; we fill this in as we go
 
+
+
 # %% [markdown]
 # ## 2.2 N-gram counting: a window three tokens wide
 
+
+
 # %%
 still(62.5)
+
+
 
 # %% [markdown]
 # The oldest language model is a lookup table. Count how often each character follows each context of n−1 characters, then predict by those frequencies:
@@ -52,6 +70,8 @@ still(62.5)
 # $$P(c \mid \text{ctx}) = \frac{\text{count}(\text{ctx}, c) + k}{\text{count}(\text{ctx}) + kV}$$
 #
 # The `+ k` (**smoothing**) keeps unseen combinations from getting probability zero, which would make the loss infinite.
+
+
 
 # %%
 train_txt = data.decode(data.train.tolist()); val_txt = data.decode(data.val[:100_000].tolist())
@@ -73,14 +93,22 @@ for n in range(1, 7):
     SCORES[f'{n}-gram'] = loss
     print(f'{n}-gram: val {loss:.3f} nats/char   ({ctxs:,} distinct contexts)')
 
+
+
 # %% [markdown]
 # A longer window helps up to a point. After that the table becomes too **sparse**: most long contexts in the validation text never appeared in training, so the counts carry no information. Counting can't generalize from "the king" to "the queen". A model that represents tokens as vectors of numbers (**embeddings**) can, because similar tokens end up with similar vectors.
+
+
 
 # %% [markdown]
 # ## 2.3 RNN: carry a hidden state, and backprop through time
 
+
+
 # %%
 still(64.6)
+
+
 
 # %% [markdown]
 # A **recurrent neural network** reads one token at a time and updates a fixed-size vector, the **hidden state**:
@@ -88,6 +116,8 @@ still(64.6)
 # $$h_t = \tanh(W_{hh}\,h_{t-1} + W_{xh}\,x_t + b)$$
 #
 # In principle h carries everything seen so far. To train it, you unroll it over the sequence and backprop through the unrolled graph (**backprop through time**, BPTT). The gradient that reaches step t from step T has passed through W_hh about T − t times, so it gets multiplied by roughly the same matrix over and over. If W_hh's largest stretch factor (its spectral radius ρ) is below 1, the gradient **vanishes**. Above 1, it can **explode**.
+
+
 
 # %%
 def bptt_profile(rho, T=64, d=32):
@@ -105,12 +135,19 @@ for rho, c in ((0.8, ASH), (1.0, BONE), (1.2, MAG)):
     ax.plot(range(64, 0, -1), bptt_profile(rho), c=c, label=f'ρ = {rho}')
 ax.set(yscale='log', xlabel='steps back from the loss', ylabel='‖∂L/∂h_t‖', title='BACKPROP THROUGH TIME'); ax.legend();
 
+
+
 # %%
 still(70.5)
 
+
+
 # %% [markdown]
 # Exploding gradients are easy to fix: **clip** the gradient norm (`clip_grad_norm_`, which every training loop in this course uses). Vanishing gradients are harder. They mean a plain RNN can't learn dependencies more than a few dozen steps long.
-#
+
+
+
+# %% [markdown]
 # ## 2.4 LSTM: put gates along the road (1997)
 # The LSTM keeps a separate **cell state** c that runs alongside the sequence like a highway, and three learned **gates** (values between 0 and 1) decide what happens to it at each step:
 #
@@ -121,6 +158,8 @@ still(70.5)
 # $$c_t = f_t \odot c_{t-1} + i_t \odot \tilde c_t \qquad h_t = o_t \odot \tanh(c_t)$$
 #
 # Because c is updated by *multiplying by f and adding*, rather than by being squashed through a matrix every step, the gradient along it can survive for hundreds of steps whenever f ≈ 1.
+
+
 
 # %%
 class CharLSTM(nn.Module):
@@ -140,11 +179,15 @@ print(f'LSTM: {n_params(lstm):,} parameters')
 lstm_hist = train_lm(lstm, data, L['steps'], L['block'], L['batch'], lr=4e-3, label='LSTM')
 SCORES['LSTM'] = eval_loss(lstm, data, L['block'], iters=50)['val']
 
+
+
 # %% [markdown]
 # **Watch the two columns.** Train loss keeps falling. On the bigger tiers, validation loss bottoms out and then rises: the model has started memorizing Tiny Shakespeare (only about 1 MB) instead of learning patterns that transfer. That's Module 0's overfitting curve, live. `train_lm` keeps the weights from the checkpoint with the lowest validation loss and restores them at the end. That's **early stopping**, the validation set doing the job Module 0 gave it. The bigger tiers also use **dropout**, which randomly zeroes some activations during training so no single path can memorize.
 #
 # ### Look at the gates
 # `nn.LSTM` doesn't return its gates, but they're just a function of its weights, so we can recompute them for a line of text. Each row below is one gate unit, each column one character.
+
+
 
 # %%
 @torch.no_grad()
@@ -168,8 +211,12 @@ for ax, k, name in zip(axes, 'fio', ('FORGET', 'INPUT', 'OUTPUT')):
 axes[-1].set_xticks(range(len(s))); axes[-1].set_xticklabels([c if c != '\n' else '⏎' for c in s], fontsize=7)
 fig.suptitle('LSTM GATES · 24 UNITS × 1 LINE', x=0.01, ha='left', color=BONE, fontweight='bold');
 
+
+
 # %%
 still(74.0)
+
+
 
 # %% [markdown]
 # ## 2.5 Seq2seq squeezes a sentence through a bottleneck; attention looks back
@@ -180,9 +227,15 @@ still(74.0)
 # $$\alpha_{tj} = \text{softmax}_j(s_t \cdot h_j) \qquad \text{context}_t = \sum_j \alpha_{tj}\,h_j$$
 #
 # Test task: **reverse a string of digits**. It's trivial for code, and a good stress test for memory.
+#
+# > **Predict first.** Both models train on strings of 4–24 digits. Which one's accuracy will fall as strings get longer, and roughly where?
+
+
 
 # %%
 still(77.2)
+
+
 
 # %%
 V_DIG, BOS, MAXLEN = 12, 10, 24                 # tokens 0-9 digits, 10 = start, 11 = pad
@@ -248,8 +301,12 @@ ax.plot(lengths, acc[False], 'o-', c=ASH, label='seq2seq (bottleneck)')
 ax.plot(lengths, acc[True], 'o-', c=MAG, label='seq2seq + attention')
 ax.set(xlabel='sequence length', ylabel='exact-match accuracy', title='REVERSE A DIGIT STRING', ylim=(-0.03, 1.03)); ax.legend();
 
+
+
 # %% [markdown]
 # The bottleneck model degrades as the input gets longer. The attention model doesn't, because it never has to fit the whole sequence into one vector. Here is what it looks at while reversing one string:
+
+
 
 # %%
 digits = torch.tensor([[3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8] + [11] * (MAXLEN - 12)], device=DEVICE)
@@ -259,8 +316,27 @@ ax.imshow(alpha[0, :12, :12].cpu(), cmap='baseline'); ax.grid(False)
 ax.set(xticks=range(12), yticks=range(12), xlabel='input position', ylabel='output step', title='ATTENTION α · REVERSAL')
 ax.set_xticklabels(digits[0, :12].tolist()); ax.set_yticklabels(pred[0].tolist());
 
+
+
 # %%
 still(81.8)
+
+
+
+# %% [markdown]
+# ### Your turn: attention for one query
+# Write attention for a single query vector `q` (d numbers) over T keys `K` (T × d) and values `V` (T × v): score each key with a dot product scaled by 1/√d, softmax the scores into weights, and return the weighted sum of the values. This is the "soft dictionary lookup" in about three lines, and the check compares it with PyTorch's built-in attention.
+
+
+
+# %%
+def attention_row(q, K, V):
+    """q: (d,), K: (T, d), V: (T, v) tensors. Return the attended value, shape (v,)."""
+    raise NotImplementedError        # your code here
+
+check('attention_row', attention_row)
+
+
 
 # %% [markdown]
 # ## 2.6 The Transformer: attention is all you need (2017)
@@ -270,8 +346,14 @@ still(81.8)
 #
 # Q, K and V are three learned linear projections of the input. A **decoder-only** language model like GPT adds a *causal mask*, so position t can only attend to positions ≤ t: it predicts the next token from the past. `TinyGPT` in `blcourse.py` is about 50 lines; read it.
 
+
+
 # %%
 still(88.0)
+
+# > **Predict first.** On the `laptop` tier the LSTM above reached its validation loss with about 0.35M parameters. Will this Transformer, with about 0.8M, beat it clearly, tie, or lose?
+
+
 
 # %%
 G = CFG['gpt']
@@ -280,13 +362,44 @@ print(f'TinyGPT: {n_params(gpt):,} parameters')
 gpt_hist = train_lm(gpt, data, G['steps'], G['block'], G['batch'], label='GPT')
 SCORES['Transformer'] = eval_loss(gpt, data, G['block'], iters=50)['val']
 
+
+
 # %%
 ctx = torch.tensor([data.encode('ROMEO:\n')], device=DEVICE)
 print(data.decode(gpt.generate(ctx, 300)[0].tolist()))
 
+
+
+# %% [markdown]
+# ### Sampling and temperature
+# The model outputs a probability for every next character, and `generate` *samples* one from that distribution, appends it, and repeats. The `temperature` argument reshapes the distribution first: divide the logits by T before the softmax. T < 1 sharpens it toward the most likely character (safer, more repetitive); T > 1 flattens it (more varied, more mistakes). T → 0 means always taking the top choice, which is called greedy decoding.
+#
+# ### Your turn: temperature
+
+
+
+# %%
+def apply_temperature(logits, T):
+    """logits: a 1-D tensor of scores. Return the probabilities after temperature T."""
+    raise NotImplementedError        # your code here: one line
+
+check('temperature', apply_temperature)
+
+
+
+# %%
+for T in (0.3, 1.5):
+    seed(1)
+    print(f'── temperature {T} ──')
+    print(data.decode(gpt.generate(ctx, 160, temperature=T)[0].tolist()), '\n')
+
+
+
 # %% [markdown]
 # ### The scoreboard
 # All models, the same validation text, the same unit. This is the module's own leaderboard.
+
+
 
 # %%
 names = list(SCORES); vals = [SCORES[k] for k in names]
@@ -298,11 +411,15 @@ for i, v in enumerate(vals):
 ax.invert_yaxis(); ax.set(xlabel='validation loss (nats/char) · lower is better', title='THE BOARD · TINY SHAKESPEARE')
 ax.axvline(math.log(data.vocab), c=ASH, ls=':', lw=1);
 
+
+
 # %% [markdown]
 # On the `laptop` tier the LSTM and the Transformer often finish close together. At this size and training budget the Transformer has no big edge in modeling ability. Its edge is that it **parallelizes and scales**, which you'll measure in Module 5. Try the `mac-max`/`cuda` tiers and watch the gap open.
 #
 # ### What does a head look at?
 # Attention weights for the last layer's heads on one line of text. Each row is a position doing the looking. The upper triangle is empty because of the causal mask.
+
+
 
 # %%
 @torch.no_grad()
@@ -319,14 +436,143 @@ fig, axes = plt.subplots(1, w.shape[0], figsize=(3 * w.shape[0], 3.2))
 for h_, ax in enumerate(np.atleast_1d(axes)):
     ax.imshow(w[h_] ** 0.5, cmap='baseline'); ax.set_title(f'HEAD {h_}'); ax.axis('off')
 
+
+
 # %%
 still(113.5)
+
+
+
+# %% [markdown]
+# ## 2.7 BERT read both ways; decoder-only scaled up
+# **BERT** (2018) is a Transformer *encoder*. Every token attends to every other token, left and right, and it's trained by hiding 15% of the tokens behind `[MASK]` and predicting them. That made it excellent at *understanding* tasks (classification, search, extraction), but it can't generate text left to right.
+#
+# A **decoder-only** model (GPT) uses a causal mask and predicts the next token. Scaled to 175B parameters (GPT-3, 2020), it handled most of BERT's tasks through prompting, and it could generate as well. The only architectural difference is the mask:
+
+
+
+# %%
+n = 8
+fig, axes = plt.subplots(1, 2, figsize=(7, 3.4))
+for ax, (title, m) in zip(axes, [('BERT · BIDIRECTIONAL', np.ones((n, n))), ('GPT · CAUSAL', np.tril(np.ones((n, n))))]):
+    ax.imshow(m, cmap='baseline', vmin=0, vmax=1.4); ax.set_title(title); ax.set(xlabel='attends to', ylabel='token'); ax.grid(False)
+
+
+
+# %%
+still(164.0)
+
+
+
+# %% [markdown]
+# Let's ask a real BERT (DistilBERT, a 260 MB download) to fill in the film's mask:
+
+
+
+# %%
+from transformers import pipeline
+fill = pipeline('fill-mask', model='distilbert/distilbert-base-uncased', device=DEVICE)
+for r in fill('you were [MASK] of the art, now you are just a baseline.', top_k=5):
+    print(f"{r['score']:.3f}  {r['token_str']}")
+del fill
+
+
+
+# %%
+still(168.2)
+
+
+
+# %% [markdown]
+# BERT-style encoders are far from dead in practice. They're still the workhorse behind **embedding models** for search and retrieval. But "SOTA on GLUE" went to the decoders.
+
+
+
+# %% [markdown]
+# ## 2.8 The parts list of a modern LLM
+# The Transformer you just built is the 2017 design. A few lines of Verse 3 each swap one of its parts, and today's LLMs (including the one you'll run in Module 4) use all of the swaps. Here is each one in a few lines of code.
+
+
+
+# %%
+still(129.3)
+
+
+
+# %% [markdown]
+# **Positions: sinusoids → RoPE.** Attention is order-blind: shuffle the tokens and the weights shuffle with them. The original Transformer *added* a fixed sinusoidal vector to each token to mark its position. **RoPE** (Su et al., 2021) instead *rotates* the query and key vectors by an angle proportional to the position. The dot product of two rotated vectors depends only on the *difference* of their angles, so attention scores depend only on **relative** position. Let's check numerically:
+
+
+
+# %%
+def rope(x, pos, base=10000.0):
+    d = x.shape[-1]; theta = base ** (-torch.arange(0, d, 2) / d)
+    ang = pos * theta; c, s = ang.cos(), ang.sin()
+    x1, x2 = x[..., 0::2], x[..., 1::2]
+    return torch.stack([x1 * c - x2 * s, x1 * s + x2 * c], -1).flatten(-2)
+
+seed(0); q, k = torch.randn(64), torch.randn(64)
+for m, n in [(5, 2), (105, 102), (1005, 1002), (7, 2)]:
+    print(f'q at {m:4d}, k at {n:4d}  (m − n = {m - n}):  q·k = {rope(q, m) @ rope(k, n):+.5f}')
+
+
+
+# %% [markdown]
+# **Normalization: LayerNorm → RMSNorm.** Deep nets keep activations at a sane scale by normalizing them in every layer. LayerNorm subtracts the mean and divides by the standard deviation. RMSNorm (2019) skips the mean and divides by the root-mean-square. That's cheaper, and it works just as well in practice.
+#
+# **Activation: ReLU → SwiGLU.** SwiGLU (Shazeer, 2020) multiplies two linear projections, one passed through Swish(x) = x·σ(x): `down(swish(gate(x)) * up(x))`. It's a learned gate inside the MLP.
+
+
+
+# %%
+x = torch.tensor([3.1, -0.4, 1.2, 0.8, -2.5, 0.3, 1.9, -1.0])
+ln = (x - x.mean()) / x.std(unbiased=False); rms = x / x.pow(2).mean().sqrt()
+z = torch.linspace(-4, 3, 200)
+fig, (a1, a2) = plt.subplots(1, 2, figsize=(10, 3.2))
+i = np.arange(8)
+a1.bar(i - 0.27, x, 0.27, color=GRAPHITE, label='input'); a1.bar(i, ln, 0.27, color=ASH, label='LayerNorm'); a1.bar(i + 0.27, rms, 0.27, color=MAG, label='RMSNorm')
+a1.set_title('NORMALIZE 8 ACTIVATIONS'); a1.legend(fontsize=8)
+a2.plot(z, torch.relu(z), c=ASH, label='ReLU'); a2.plot(z, z * torch.sigmoid(z), c=MAG, label='Swish (SwiGLU\'s gate)')
+a2.set_title('ACTIVATIONS'); a2.legend(fontsize=8);
+
+
+
+# %% [markdown]
+# These aren't just textbook parts. Download the configuration of this course's LLM (a few KB) and you'll find every one of them:
+
+
+
+# %%
+from transformers import AutoConfig
+cfg = AutoConfig.from_pretrained(CFG['llm'])
+for k in ['model_type', 'num_hidden_layers', 'hidden_size', 'num_attention_heads', 'num_key_value_heads', 'intermediate_size',
+          'hidden_act', 'rms_norm_eps', 'rope_theta', 'max_position_embeddings', 'vocab_size']:
+    print(f'{k:>24}: {getattr(cfg, k, getattr(cfg, "rope_parameters", {}).get(k) if k == "rope_theta" else None)}')
+
+
+
+# %% [markdown]
+# `hidden_act: silu` is Swish, used inside a SwiGLU MLP. `rms_norm_eps` means RMSNorm. `rope_theta` is RoPE's base frequency. Every block of this model is the verse's parts list.
+
+
 
 # %% [markdown]
 # ### Checkpoint
 # 1. Why does an n-gram model stop improving as n grows?
 # 2. What goes wrong when you backprop through 64 steps of an RNN, and how do LSTM gates help?
-# 3. What is the seq2seq bottleneck? Sketch how attention removes it.
+# 3. What is the seq2seq bottleneck, and how does attention remove it?
 # 4. Why is the Transformer easier to scale than an LSTM, even when they reach similar loss at small sizes?
+# 5. BERT vs GPT: what's the one architectural difference, and what does each make easy?
+# 6. RoPE makes the attention score between two tokens depend on what?
 #
-# **Next:** Module 3, the parts of a modern LLM.
+# <details><summary>Answers</summary>
+#
+# 1. The table goes sparse: most long contexts in new text never appeared in training, so their counts say nothing. Counting also can't share what it learned between similar words.
+# 2. The gradient is multiplied by roughly the same matrix at every step, so it shrinks toward 0 or blows up. The LSTM's cell state is updated by multiply-and-add through gates, so when the forget gate is near 1 the signal (and gradient) passes through almost unchanged.
+# 3. The encoder must squeeze the whole input into one fixed-size vector, so long inputs lose detail. Attention lets the decoder look at every encoder state at every step and take a weighted blend, so nothing has to fit in one vector.
+# 4. Every position is computed in parallel, with no step-by-step dependency, so training uses a GPU's thousands of cores and grows with more data and compute. An RNN must process tokens one after another.
+# 5. The attention mask. BERT lets every token see every token (good for understanding: classification, search, embeddings). GPT's causal mask lets a token see only the past (good for generating text one token at a time).
+# 6. Only on how far apart the two tokens are (m − n), not on where they sit.
+# </details>
+#
+# **Next:** Module 3, generating data.

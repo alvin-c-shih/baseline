@@ -18,14 +18,36 @@ VIDEO = 'https://youtu.be/Qy3_4oXoS6c'
 NB = '../notebooks'
 
 # ── the song, as the course reads it: (start s, end s, label, module, chorus?) ──
+# Modules follow what depends on what, not film order, so one module can cover several stretches of the film.
 SONG = [
     (0.00, 38.91, 'VERSE 1', 1, False), (38.91, 45.81, 'DEPTH', 1, False), (45.81, 60.53, 'CHORUS', 0, True),
     (60.53, 90.37, 'VERSE 2', 2, False), (90.37, 97.24, 'MEMORY', 2, False), (97.24, 119.64, 'CHORUS · GONE', 2, True),
-    (119.64, 148.32, 'VERSE 3', 3, False), (148.32, 155.58, 'ATTN', 2, False), (155.58, 170.52, 'CHORUS · BERT', 4, True),
-    (170.52, 198.98, 'BRIDGE', 4, False), (198.98, 206.18, 'SCALE', 5, False), (206.18, 220.58, 'CHORUS', 5, True),
-    (220.58, 247.20, 'FOOTNOTE · FALL', 5, False),
+    (119.64, 127.02, 'GAN · DIFFUSION', 3, False), (127.02, 133.72, 'PARTS', 2, False), (133.72, 148.32, 'EFFICIENCY', 4, False),
+    (148.32, 155.58, 'ATTN', 2, False), (155.58, 163.28, 'CHORUS', 4, True), (163.28, 170.52, 'BERT', 2, True),
+    (170.52, 177.17, 'RLHF · DPO', 4, False), (177.17, 198.98, 'FLASH · TAPE', 5, False), (198.98, 206.18, 'SCALE', 5, False),
+    (206.18, 220.58, 'CHORUS', 5, True), (220.58, 247.20, 'FOOTNOTE · FALL', 5, False),
 ]
 LENGTH = 247.2
+
+
+def spans(n: int) -> list[tuple[float, float]]:
+    """The stretches of the film that module n covers, with adjacent segments merged."""
+    out = []
+    for a, b, _, mod, _ in SONG:
+        if mod == n:
+            if out and abs(out[-1][1] - a) < 1e-6:
+                out[-1] = (out[-1][0], b)
+            else:
+                out.append((a, b))
+    return out
+
+
+def module_at(t: float) -> int:
+    """Which module explains the still at time t: the one whose concept uses it, else the song map."""
+    for m in MODULES:
+        if any(abs(c['t'] - t) < 1e-6 for c in m['concepts']) or abs(m['hero'] - t) < 1e-6:
+            return m['n']
+    return next(mod for a, b, _, mod, _ in SONG if a <= t < b)
 
 
 def tc(t: float) -> str:
@@ -178,9 +200,9 @@ def timeline() -> str:
 
 def module_page(i: int) -> str:
     m = MODULES[i]
-    a, b = m['span']
+    watch = ' · '.join(f'<a href="{VIDEO}?t={int(a)}" target="_blank" rel="noopener">{tc(a)}–{tc(b)} ↗</a>' for a, b in spans(m['n']))
     out = [f'<section class="mhead"><div class="label"><span class="now">Module {m["n"]}</span> · {html.escape(m["section"])} · '
-           f'<a href="{VIDEO}?t={int(a)}" target="_blank" rel="noopener">watch {tc(a)}–{tc(b)} ↗</a></div>'
+           f'watch {watch}</div>'
            f'<h1>{html.escape(m["title"])}</h1><p class="prose">{gloss(m["intro"])}</p>{still(m["hero"], big=True)}</section>',
            f'<div class="lab" style="margin-top:28px"><b>LAB</b> · open <a href="{NB}/{m["file"]}"><code>notebooks/{m["file"]}</code></a> '
            f'in Jupyter. Each section below names the notebook section that runs it. '
@@ -202,7 +224,7 @@ def module_page(i: int) -> str:
                    f'{bridge}{g["body"]}{example}{math}'
                    f'<div class="lab"><b>LAB</b> · notebook {c["lab"]}</div></div>'
                    f'<div class="side">{still(c["t"])}{era}{biz}{lore}</div></section>')
-    qs = ''.join(f'<li>{html.escape(q)}</li>' for q in m['checkpoint'])
+    qs = ''.join(f'<li>{html.escape(q)}<details><summary>Answer</summary><p>{html.escape(a)}</p></details></li>' for q, a in m['checkpoint'])
     out.append(f'<section class="checkpoint"><h2>Checkpoint</h2><ol>{qs}</ol></section>')
     prev = f'<a href="{MODULES[i - 1]["slug"]}.html">← M{i - 1} · {html.escape(MODULES[i - 1]["title"])}</a>' if i else '<a href="index.html">← Course</a>'
     nxt = f'<a href="{MODULES[i + 1]["slug"]}.html">M{i + 1} · {html.escape(MODULES[i + 1]["title"])} →</a>' if i + 1 < len(MODULES) else '<a href="reel.html">The reel →</a>'
@@ -213,21 +235,22 @@ def module_page(i: int) -> str:
 def index_page() -> str:
     cards = ''.join(
         f'<a class="card" href="{m["slug"]}.html"><img src="stills/t{m["hero"]:06.2f}.jpg" alt="" loading="lazy" width="1600" height="900">'
-        f'<div class="body"><div class="label"><span class="now">M{m["n"]}</span> · {html.escape(m["section"])} · {tc(m["span"][0])}–{tc(m["span"][1])}</div>'
+        f'<div class="body"><div class="label"><span class="now">M{m["n"]}</span> · {html.escape(m["section"])}</div>'
         f'<h3>{html.escape(m["title"])}</h3><p>{html.escape(m["card"])}</p></div></a>' for m in MODULES)
     body = f'''
 <section class="hero"><img src="stills/t005.50.jpg" alt="The film's first shot: a pen plotter draws y = 0, the first baseline" width="1600" height="900">
 <div class="over"><div class="label"><span class="now">A first ML course</span> · for software developers · self-paced</div>
 <h1>You were state of the art. <span class="mag">Now you're a baseline.</span></h1>
-<p><em>Baseline</em> is a 4-minute music video that walks through more than thirty machine-learning techniques in order, from the 1958 perceptron to attention and its linear-time successors, each one replaced by the next. This course uses it as a syllabus. Every module pairs a section of the film with the ideas behind it and a Jupyter lab where you build them.</p></div></section>
+<p><em>Baseline</em> is a 4-minute music video that walks through more than thirty machine-learning techniques in order, from the 1958 perceptron to attention and its linear-time successors, each one replaced by the next. This course teaches those ideas, anchored to the film: every concept comes with a still from the moment the film shows it, and a Jupyter lab where you build it.</p></div></section>
 
 <div class="prose">
 <h2>How it works</h2>
-<p><strong>Watch</strong> the section of the film (each module links to its timestamp). <strong>Read</strong> the module page: every concept is anchored to a still from the film, so you always know where you are. <strong>Run</strong> the lab notebook: you build each technique yourself, at a size that fits your machine, and see the same kind of real numbers the film puts on screen.</p>
-<p>No ML background is assumed. You need to read Python and be comfortable at a terminal. The math is shown, but each idea is also explained in code.</p>
+<p><strong>Watch</strong> the parts of the film a module covers (each module and every still link to their timestamps). <strong>Read</strong> the module page: every concept is anchored to a still from the film, so you always know where you are. <strong>Run</strong> the lab notebook: you build each technique yourself, at a size that fits your machine, and see the same kind of real numbers the film puts on screen.</p>
+<p>No ML background is assumed. You need to read Python and be comfortable at a terminal. The math is shown, but each idea is also explained in code, and every lab has small exercises with automatic checks: write a function, run the cell, see ✓ or what went wrong.</p>
 </div>
 
-<h2>The song is the syllabus</h2>
+<h2>The song, reordered for learning</h2>
+<p class="prose">The film goes in historical order. The course goes in the order ideas depend on each other, so a module can cover several stretches of the film. The strip below is the song; each stretch is colored by the module that teaches it.</p>
 {timeline()}
 <div class="cards">{cards}</div>
 
@@ -248,15 +271,15 @@ uv run jupyter lab notebooks/   # open 00_the_loop.ipynb first</code></pre>
 
 <h2>Self-paced plan</h2>
 <div class="scroll"><table>
-<tr><th>Module</th><th>Read</th><th>Lab (laptop tier, measured)</th><th>You will have built</th></tr>
-<tr><td>M0 · The Loop</td><td>25 min</td><td>&lt; 1 min</td><td>hand-written digit rules vs a learned template; gradient descent by hand; an overfitting curve</td></tr>
-<tr><td>M1 · One Line, Then Many</td><td>45 min</td><td>≈ 3.5 min</td><td>backprop in numpy; HOG + SVM vs a CNN on CIFAR-10; a residual net</td></tr>
-<tr><td>M2 · Sequences</td><td>60 min</td><td>≈ 4 min (CPU) / 2 min (laptop GPU)</td><td>n-grams, an LSTM, seq2seq ± attention, a tiny GPT, one leaderboard</td></tr>
-<tr><td>M3 · The Lab</td><td>60 min</td><td>≈ 2 min + LLM download</td><td>GAN vs DDPM, RoPE, MoE, INT4 quantization and LoRA on a real LLM</td></tr>
-<tr><td>M4 · Bridge</td><td>45 min</td><td>≈ 3.5 min (CPU) / 1 min (laptop GPU)</td><td>a Bradley–Terry fit, DPO, FlashAttention from scratch, a needle-in-a-haystack map</td></tr>
-<tr><td>M5 · Scale</td><td>30 min</td><td>≈ 2 min</td><td>your own scaling law, linear attention, a final project plan</td></tr>
+<tr><th>Module</th><th>Read</th><th>Lab (laptop tier, CPU)</th><th>You will have built</th></tr>
+<tr><td>M0 · The Loop</td><td>40 min</td><td>&lt; 1 min</td><td>hand-written rules vs a learned template; gradient descent; a digit classifier with softmax and cross-entropy; mini-batch training</td></tr>
+<tr><td>M1 · One Line, Then Many</td><td>45 min</td><td>≈ 3 min</td><td>backprop in numpy; XOR wired by hand; HOG + SVM vs a CNN on CIFAR-10; a residual net</td></tr>
+<tr><td>M2 · Sequences</td><td>60 min</td><td>≈ 4 min</td><td>n-grams, an LSTM, seq2seq ± attention, a tiny GPT, one leaderboard; BERT's mask; RoPE</td></tr>
+<tr><td>M3 · Generating Data</td><td>20 min</td><td>&lt; 1 min</td><td>a GAN that collapses and a diffusion model that doesn't</td></tr>
+<tr><td>M4 · A Real LLM</td><td>60 min</td><td>≈ 5 min + LLM download</td><td>INT4 quantization, LoRA, few-shot prompting and DPO on a real LLM</td></tr>
+<tr><td>M5 · Scale and Long Context</td><td>45 min</td><td>≈ 2 min</td><td>your own scaling law, FlashAttention from scratch, a needle-in-a-haystack map, linear attention</td></tr>
 </table></div>
-<p>Every module ends with checkpoint questions, and most labs have a <em>Try it</em> with a hidden answer. The <a href="reel.html">reel</a> lists every still in film order, with the module that explains it.</p>
+<p>Every module ends with checkpoint questions with folded answers, and every lab has <em>Predict first</em> prompts and <em>Your turn</em> exercises with automatic checks. The reference solutions are in <code>notebooks/exercises.py</code>. The <a href="reel.html">reel</a> lists every still in film order, with the module that explains it.</p>
 </div>
 '''
     return page('Baseline · ML for Developers', 'A first machine-learning course for software developers, taught through the Baseline music video.', body, 'index.html')
@@ -266,7 +289,8 @@ def reel_page() -> str:
     items = []
     for k in sorted(CAPS, key=float):
         t, c = float(k), CAPS[k]
-        items.append(f'<div><div class="label"><a class="mod" href="m{c["m"]}.html">Module {c["m"]}</a></div>{still(t)}</div>')
+        n = module_at(t)
+        items.append(f'<div><div class="label"><a class="mod" href="m{n}.html">Module {n}</a></div>{still(t)}</div>')
     body = (f'<div class="prose" style="margin-top:48px"><div class="label"><span class="now">The reel</span> · {len(CAPS)} stills · film order</div>'
             f'<h1>Every frame <span class="mag">we teach from</span></h1><p>Click a timecode to watch that moment, or a module to read about it.</p></div>'
             f'<div class="reel" style="margin-top:36px">{"".join(items)}</div>')

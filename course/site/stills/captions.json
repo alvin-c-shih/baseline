@@ -1,346 +1,277 @@
 {
  "5.50": {
-  "m": 1,
   "scene": "THE LINE",
   "c": "Four Boolean input points fall onto the unit square, and AND and OR are each cut by a single stroke. The truth table hangs in the back."
  },
  "8.60": {
-  "m": 1,
   "scene": "THE LINE",
   "c": "The perceptron's wiring: x₁, x₂ → Σ → step → ŷ, with Rosenblatt's update rule typeset below."
  },
  "11.50": {
-  "m": 1,
   "scene": "THE LINE",
   "c": "XOR. The EPOCH and ERRORS counters never reach zero: no single line separates the four points."
  },
  "15.60": {
-  "m": 1,
   "scene": "THE LINE",
   "c": "SOLVED ✓. Each point is lifted to its hidden-layer coordinates (h₁ = OR, h₂ = NAND), where one cut separates them."
  },
  "17.20": {
-  "m": 1,
   "scene": "SQUASH",
   "c": "SIGMOID on the oscilloscope: a big input sine is squeezed into the narrow band (0, 1)."
  },
  "18.20": {
-  "m": 1,
   "scene": "SQUASH",
   "c": "A gradient light runs backwards from LOSS through six sigmoid stages, losing × ¼ at each one."
  },
  "19.50": {
-  "m": 1,
   "scene": "SQUASH",
   "c": "ZERO. By the input end, the gradient has vanished: 0.25⁸ ≈ 0.000015."
  },
  "22.00": {
-  "m": 1,
   "scene": "SQUASH",
   "c": "The same chain with ReLU: × 1 at every stage, so the gradient arrives at full strength."
  },
  "26.50": {
-  "m": 1,
   "scene": "CARVED",
   "c": "HOG engraved on a copper plate: a 9-direction gradient histogram per 8 × 8 cell, with the SIFT descriptor panel beside it."
  },
  "28.00": {
-  "m": 1,
   "scene": "LEARNED",
   "c": "CONVOLUTION: a learned kernel slides across the plate and the feature map fills in row by row."
  },
  "30.50": {
-  "m": 1,
   "scene": "LEARNED",
   "c": "NOBODY PLANNED: 96 real conv1 filters trained on CIFAR-10. Test accuracy 88.3% after 30 epochs."
  },
  "32.50": {
-  "m": 1,
   "scene": "MARGIN",
   "c": "SVM: the fences push outward until they touch three support posts. The dial reads the margin 2/‖w‖."
  },
  "34.00": {
-  "m": 1,
   "scene": "MARGIN",
   "c": "KERNEL TRICK: pistons lift each post by x₁² + x₂², and a flat blade then separates the rings."
  },
  "35.50": {
-  "m": 1,
   "scene": "MARGIN",
   "c": "DEEP NETS: ImageNet top-5 error, 2010–2015. Magenta marks AlexNet's 2012."
  },
  "44.50": {
-  "m": 1,
   "scene": "THE CLAIM · DEPTH",
   "c": "NEED at the bottom of a 152-floor shaft, ResNet's depth. The black-glass stele is laser-engraved GUARANTEED."
  },
  "47.00": {
-  "m": 0,
   "scene": "THE BOARD · ILSVRC",
   "c": "The champion's board: STATE OF THE ART above a real leaderboard (ImageNet top-5 error)."
  },
  "49.50": {
-  "m": 0,
   "scene": "THE BOARD · ILSVRC",
   "c": "BASELINE: the old champion's nameplate hits the floor at y = 0 and magenta floods out from the impact."
  },
  "52.80": {
-  "m": 0,
   "scene": "THE BOARD · ILSVRC",
   "c": "DEADLINE: the title board turns into a countdown and hits 00:00.00, the next submission deadline."
  },
  "54.50": {
-  "m": 1,
   "scene": "COLD STORAGE",
   "c": "Kernel tricks and hand-made features in a freezer: RBF, polynomial, SIFT, HOG, Haar, Gabor, LBP, bag of words."
  },
  "59.20": {
-  "m": 0,
   "scene": "COLD STORAGE",
   "c": "The crown flies to the network, whose layers learn edges, textures, parts and classes on their own. Nobody wrote those rules."
  },
  "62.50": {
-  "m": 2,
   "scene": "NIGHT LINE",
   "c": "N-GRAM: a gantry three cars wide slides along the night train, counting."
  },
  "64.60": {
-  "m": 2,
   "scene": "NIGHT LINE",
   "c": "RNN: a crane reads one car at a time. Its 8 LEDs are a real tanh RNN's hidden state."
  },
  "70.50": {
-  "m": 2,
   "scene": "NIGHT LINE",
   "c": "VANISH or EXPLODE: behind the crane the track forks, one branch falling to 10⁻²⁰ and the other climbing."
  },
  "74.00": {
-  "m": 2,
   "scene": "NIGHT LINE",
   "c": "LSTM: forget, input and output barriers beside every car, opened by a real LSTM's gate values."
  },
  "77.20": {
-  "m": 2,
   "scene": "LAST STOP",
   "c": "SEQ2SEQ: the sentence's cars roll into the encoder funnel."
  },
  "78.00": {
-  "m": 2,
   "scene": "LAST STOP",
   "c": "BOTTLENECK: the whole sentence squeezed into one glowing vector c ∈ ℝ⁶⁴."
  },
  "81.80": {
-  "m": 2,
   "scene": "LAST STOP",
   "c": "ATTENTION: a real α heatmap on the floor. The anti-diagonal means the sentence was reversed."
  },
  "84.00": {
-  "m": 2,
   "scene": "LAST STOP",
   "c": "RECURRENCE: one car per beat through a turnstile, t = 1, 2, 3 …"
  },
  "88.00": {
-  "m": 2,
   "scene": "LAST STOP",
   "c": "TRANSFORMERS: every car appears at once, with arcs between every pair."
  },
  "102.00": {
-  "m": 0,
   "scene": "THE BOARD · WMT14",
   "c": "Chorus 2's leaderboard: WMT14 English→German BLEU. The new champion is TRANSFORMER (BIG), 28.4."
  },
  "105.90": {
-  "m": 2,
   "scene": "GONE",
   "c": "The LSTM cell: the cell-state highway on top, σ σ tanh σ gates below."
  },
  "110.50": {
-  "m": 2,
   "scene": "GONE",
   "c": "One attention layer lands like a glass slab on the line of LSTM cells."
  },
  "113.50": {
-  "m": 2,
   "scene": "GONE",
   "c": "GONE: the recurrent loops snap. The slab is engraved softmax(QKᵀ/√dₖ)V."
  },
  "121.50": {
-  "m": 3,
   "scene": "THE LAB · GENERATIVE",
   "c": "GAN court: 25 target modes are light wells, the generator's distribution is the magenta terrain, and G and D are the two players."
  },
  "122.90": {
-  "m": 3,
   "scene": "THE LAB · GENERATIVE",
   "c": "COLLAPSED: the terrain folds into one spike and the other wells go dark. MODES 01/25."
  },
  "124.90": {
-  "m": 3,
   "scene": "THE LAB · GENERATIVE",
   "c": "DENOISE: each word condenses out of noise along a real DDPM trajectory. The odometer counts t."
  },
  "126.50": {
-  "m": 3,
   "scene": "THE LAB · GENERATIVE",
   "c": "A corridor of intermediate steps, from t = 1000 down to 0."
  },
  "127.50": {
-  "m": 3,
   "scene": "THE LAB · GENERATIVE",
   "c": "SINUSOIDS: the sinusoidal position-encoding wall, 40 positions × 16 dimensions."
  },
  "129.30": {
-  "m": 3,
   "scene": "THE LAB · GENERATIVE",
   "c": "ROPE: each ring of the tunnel is a position m, with eight frequency needles turned by m·θᵢ."
  },
  "131.20": {
-  "m": 3,
   "scene": "THE LAB · GENERATIVE",
   "c": "LAYERNORM → RMS: 16 real residual activations, centered and scaled, then only scaled."
  },
  "133.20": {
-  "m": 3,
   "scene": "THE LAB · GENERATIVE",
   "c": "SWIGLU: the activation tube bends from ReLU into Swish, minimum −0.278 at x = −1.278."
  },
  "136.00": {
-  "m": 3,
   "scene": "THE LAB · EFFICIENCY",
   "c": "EXPERTS: for each word a real top-2 router lights two of eight expert towers."
  },
  "138.50": {
-  "m": 3,
   "scene": "THE LAB · EFFICIENCY",
   "c": "32 → 4 bits: the bit wall sheds its plates as real fp32 weights snap to INT4."
  },
  "140.30": {
-  "m": 3,
   "scene": "THE LAB · EFFICIENCY",
   "c": "THROUGHPUT: the memory bar shrinks × 8 and the tokens/s gauge swings over."
  },
  "143.80": {
-  "m": 3,
   "scene": "THE LAB · EFFICIENCY",
   "c": "LORA: thin B and A plates lay a rank-8 patch over the frozen W. 65,536 trainable, 0.39%."
  },
  "146.00": {
-  "m": 3,
   "scene": "THE LAB · EFFICIENCY",
   "c": "IN CONTEXT: a few-shot prompt ribbon on the floor, and the model fills in the last row."
  },
  "147.80": {
-  "m": 3,
   "scene": "THE LAB · EFFICIENCY",
   "c": "∇θL falls through the floor. The frozen block reads NOT COMPUTED."
  },
  "151.50": {
-  "m": 2,
   "scene": "THE CLAIM · ATTENTION",
   "c": "Four bricks rise: ATTENTION'S · ALL · YOU · NEED, with real attention arcs between them."
  },
  "160.50": {
-  "m": 0,
   "scene": "THE BOARD · LAMBADA",
   "c": "Chorus 3's leaderboard: LAMBADA accuracy. The new champion is 175B DECODER · FEW-SHOT, 86.4."
  },
  "164.00": {
-  "m": 4,
   "scene": "BOTH WAYS",
   "c": "BERT: a row of glass tokens with one [MASK]. Beams read in from both ends to fill it."
  },
  "166.00": {
-  "m": 4,
   "scene": "BOTH WAYS",
   "c": "MASKED AND BIDIRECTIONAL: the full attention square, where every token sees every token."
  },
  "168.20": {
-  "m": 4,
   "scene": "BOTH WAYS",
   "c": "DECODER-ONLY: the causal triangle grows across the floor, 117M → 1.5B → 175B."
  },
  "172.50": {
-  "m": 4,
   "scene": "THE PLANT",
   "c": "RLHF: answers A–D pass a REWARD MODEL scanner and get fitted Bradley–Terry scores."
  },
  "174.80": {
-  "m": 4,
   "scene": "THE PLANT",
   "c": "DPO: a crane lifts the reward model, the middleman, off the conveyor."
  },
  "176.50": {
-  "m": 4,
   "scene": "THE PLANT",
   "c": "The vault: β log Z(x) appears on both sides and cancels. That's why DPO needs no reward model."
  },
  "179.00": {
-  "m": 4,
   "scene": "THE PLANT",
   "c": "FLASHATTENTION: a real 64 × 64 score matrix cut into 16 × 16 tiles, moved on-chip one tile at a time."
  },
  "183.00": {
-  "m": 4,
   "scene": "THE PLANT",
   "c": "HBM: standard attention's 4,325,376 memory accesses jam the road; the tiles flow freely."
  },
  "186.50": {
-  "m": 4,
   "scene": "THE TAPE",
   "c": "CONTEXT WINDOW: the song's own BPE tokens as tape, the window doubling from 2,048 to 1,048,576."
  },
  "189.20": {
-  "m": 4,
   "scene": "THE TAPE",
   "c": "NEEDLE: at the far end of the tape, token 0, the P of PERCEPTRON."
  },
  "191.00": {
-  "m": 4,
   "scene": "THE TAPE",
   "c": "The retrieval map, context length × needle depth, all green."
  },
  "197.00": {
-  "m": 5,
   "scene": "THE TAPE",
   "c": "The records' staircase on real dates: each claim stands on its paper's publication day."
  },
  "202.00": {
-  "m": 5,
   "scene": "THE CLAIM · SCALE",
   "c": "SCALE: a power-law line on log–log axes, one order of magnitude per beat."
  },
  "211.00": {
-  "m": 5,
   "scene": "THE BOARD · PARAMETERS",
   "c": "Chorus 4's leaderboard: parameter count. The new champion is a 540B DENSE DECODER."
  },
  "215.80": {
-  "m": 5,
   "scene": "PRESSURE",
   "c": "QUADRATIC: the attention square on the floor. n doubles on every beat and n² quadruples."
  },
  "219.00": {
-  "m": 5,
   "scene": "PRESSURE",
   "c": "A LINEAR-TIME SUCCESSOR: a scan head at constant speed with a fixed-size state, O(n)."
  },
  "224.00": {
-  "m": 5,
   "scene": "FOOTNOTE",
   "c": "The four 'all you need' claims shrink into numbered footnotes."
  },
  "227.00": {
-  "m": 5,
   "scene": "FOOTNOTE",
   "c": "A memorial wall of every name the film sang, PERCEPTRON to FLASHATTENTION."
  },
  "235.50": {
-  "m": 5,
   "scene": "THE FALL",
   "c": "The tower of champions: PERCEPTRON 1958 at the bottom, SELF-ATTENTION 2017 wearing the crown."
  },
  "246.00": {
-  "m": 5,
   "scene": "ONE MORE TIME",
   "c": "The plotter returns and draws a new line next to the old one."
  }

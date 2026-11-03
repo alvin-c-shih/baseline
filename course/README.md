@@ -1,6 +1,6 @@
 # Baseline: ML for software developers
 
-A self-paced first course in machine learning for professional developers who have never taken one. It uses the *Baseline* music video as its syllabus. The film names more than thirty techniques in historical order, from the 1958 perceptron to attention and its linear-time successors. Each course module pairs one section of the film with the ideas behind it, anchored by stills rendered from the film's own engine, plus a Jupyter lab where you build those ideas at a size your machine can run.
+A self-paced first course in machine learning for professional developers who have never taken one. It teaches the ideas in the *Baseline* music video. The film names more than thirty techniques in historical order, from the 1958 perceptron to attention and its linear-time successors. Each course module pairs one section of the film with the ideas behind it, anchored by stills rendered from the film's own engine, plus a Jupyter lab where you build those ideas at a size your machine can run.
 
 | | |
 |---|---|
@@ -10,14 +10,22 @@ A self-paced first course in machine learning for professional developers who ha
 
 ## Modules
 
+The film goes in historical order; the modules go in the order the ideas depend on each other, so some modules cover several stretches of the film. Every concept still links to the exact moment the film shows it.
+
 | | Film | Topics | Lab highlights |
 |---|---|---|---|
-| **M0 · The Loop** | chorus · 0:45–1:00 | model, loss, gradient descent, autograd, train/val/test, overfitting, benchmarks | gradient descent by hand; an overfitting curve |
-| **M1 · One Line, Then Many** | verse 1 + DEPTH · 0:00–0:45 | perceptron, XOR, backprop, vanishing gradients, ReLU and init, HOG vs CNN, SVM and kernels, residual connections | backprop in numpy (the film's 2-2-1 network, seed 7); HOG + SVM vs a CNN on CIFAR-10; a 30-layer net with and without residuals |
-| **M2 · Sequences** | verse 2 + MEMORY + GONE · 1:00–1:59 | tokens/BPE, n-grams, RNN, BPTT, LSTM, seq2seq, attention, Transformer | n-gram → LSTM → TinyGPT on one leaderboard; seq2seq ± attention reversing digit strings |
-| **M3 · The Lab** | verse 3 · 1:59–2:28 | GAN, diffusion, RoPE, RMSNorm, SwiGLU, MoE, quantization, LoRA, in-context learning | GAN vs DDPM on the film's 25 modes; INT8/INT4/group-128 quantization of a real LLM; LoRA vs few-shot |
-| **M4 · Bridge** | chorus 3 + bridge · 2:43–3:19 | BERT vs decoder-only, RLHF, Bradley–Terry, DPO, FlashAttention, long context | DPO on a real LLM; FlashAttention's online softmax from scratch; a needle-in-a-haystack map |
-| **M5 · Scale** | SCALE → end · 3:19–4:07 | scaling laws, O(n²) attention, KV cache, linear attention/SSMs, baselines | fit your own scaling law; chunked linear attention vs softmax attention |
+| **M0 · The Loop** | chorus 1 | why learn programs; model, loss, gradient descent, autograd; classification (softmax, cross-entropy); mini-batches, epochs, optimizers; vectors and tensor shapes; train/val/test; benchmarks | hand-written digit rules (36%) vs a learned template (95%); mini-batch vs full-batch training |
+| **M1 · One Line, Then Many** | verse 1 + DEPTH | perceptron, XOR, backprop, vanishing gradients, ReLU and init, HOG, SVM and kernels, CNNs, residual connections | backprop in numpy (the film's 2-2-1 network, seed 7); HOG + SVM vs a CNN on CIFAR-10; 30 layers with and without residuals |
+| **M2 · Sequences** | verse 2, MEMORY, GONE, BERT, parts of verse 3 | tokens/BPE, n-grams, RNN, BPTT, LSTM, seq2seq, attention, Transformer, sampling temperature, BERT vs decoder-only, RoPE, RMSNorm, SwiGLU | n-gram → LSTM → TinyGPT on one leaderboard; seq2seq ± attention; DistilBERT fills the film's mask |
+| **M3 · Generating Data** | verse 3, first lines | GANs, mode collapse, diffusion | GAN vs DDPM on the film's 25 modes |
+| **M4 · A Real LLM** | verse 3, chorus 3, bridge (RLHF, DPO) | a real LLM's outputs, mixture of experts, quantization, LoRA, in-context learning, RLHF and Bradley–Terry, DPO | INT8/INT4/group-128 quantization; LoRA vs few-shot; DPO, all on one Qwen2.5 model |
+| **M5 · Scale and Long Context** | bridge (FlashAttention, the tape), SCALE → end | scaling laws, Chinchilla vs serving cost, O(n²) attention, KV cache, FlashAttention, long context, linear attention, baselines | your own scaling law; FlashAttention's tiled online softmax; a needle-in-a-haystack map; linear vs softmax attention |
+
+### How each lab works
+
+- **Predict first:** before each long or surprising cell, a prompt asks you to guess the result.
+- **Your turn:** 13 small exercises (two or three per module) where you fill in a function and run `check(...)`. It prints ✓, or ✗ with the failing case, or "not attempted", and never stops the notebook. Reference solutions are in `notebooks/exercises.py`.
+- **Checkpoint:** questions at the end of each module, with folded answers (in the notebooks and on the site).
 
 ## Setup
 
@@ -65,16 +73,16 @@ BASELINE_TIER=laptop BASELINE_DEVICE=cpu uv run jupyter lab notebooks/
 
 Each notebook was run top to bottom with nbconvert on an M1 Max with 64 GB. The `laptop` column was forced onto the CPU to show the slowest case; a laptop's GPU is faster. The `cuda` tier has not been run yet.
 
-| Notebook | `laptop` on CPU | `mac-max` on MPS |
+| Notebook | `laptop` on CPU (student mode) | `mac-max` on MPS (reference solutions) |
 |---|---|---|
-| `00_the_loop` | 11 s | 9 s |
-| `01_one_line_then_many` | 3.5 min (CNN 68.5% vs HOG 55.8%) | 6.3 min (CNN 88.6% vs HOG 56.5%) |
-| `02_sequences` | 4.0 min (LSTM 1.54, GPT 1.54) | 9.9 min (LSTM 1.51, GPT 1.47) |
-| `03_the_lab` | 1.9 min | 3.1 min |
-| `04_alignment_and_scale_out` | 3.6 min | 3.7 min |
-| `05_scale_and_footnotes` | 1.7 min | 2.9 min |
+| `00_the_loop` | 10 s | 10 s |
+| `01_one_line_then_many` | 2.7 min (CNN 68.5% vs HOG + SVM 55.8%) | 4.2 min (CNN 88.6% vs 56.5%) |
+| `02_sequences` | 4.1 min | 9.8 min (GPT beats LSTM; both early-stopped) |
+| `03_generating_data` | 23 s | 37 s |
+| `04_a_real_llm` | 4.7 min (DPO: 102 → 51 words) | 3.6 min (DPO: 100 → 56 words) |
+| `05_scale_and_long_context` | 2.2 min (needles 20/20 up to 2K) | 5.3 min (misses needles from 1K up) |
 
-The first run of M1, M3 and M4 also includes the downloads.
+*Student mode* leaves every exercise unattempted, which proves no later cell depends on a student's answer. `BASELINE_SOLUTIONS=1` runs each exercise's reference solution through its tests instead. The first runs of M1, M2, M4 and M5 also include downloads.
 
 ## Editing
 

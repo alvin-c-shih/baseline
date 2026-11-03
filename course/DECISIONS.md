@@ -7,7 +7,7 @@ A record of what was decided for the *Baseline* ML course, and why, for later re
 - **Who:** professional software developers who have never taken an ML class. They are assumed to read Python and use a terminal. No calculus or linear algebra is assumed: the math is always shown but always optional.
 - **Pacing:** self-paced, chosen over 6 × 2-hour sessions or a one-day workshop. So every module ends with checkpoint questions, and the labs have *Try it* exercises with folded answers.
 - **Language:** English. The repo's own docs are in Traditional Chinese; the root README's documents table links to the course with a one-line Chinese description.
-- **Syllabus = the song.** Six modules follow the film's sections. One deviation: **M0 · The Loop** (training loop, train/val/test, benchmarks) comes first even though it is anchored to the first chorus, because every later module needs it.
+- **Order by dependency, anchored to the song** (revised; it was "syllabus = the song"). The first version followed the film's sections, with one deviation (M0 first). A learnability review found three places where film order put a topic before what it depends on, so the modules were reordered. See *Reorder for learnability* below.
 - **Additions the film doesn't cover, for this audience:** train/val/test and overfitting, initialization, embeddings, using a pretrained model from a hub, and "always run a baseline" (M5's closing advice, with a table of baselines by problem type).
 - **Shrunk:** the Hamming/ECC moment in pre-chorus 2 (MEMORY'S) isn't ML and gets no section.
 
@@ -16,6 +16,38 @@ A record of what was decided for the *Baseline* ML course, and why, for later re
 - **The module pages are the "slides".** The course is a static HTML site (`site/`), plus one Jupyter notebook per module (`notebooks/`). There is no slide deck file. The user referred to the module pages as slides, and feedback on them is tracked below. *Open:* if an actual presentation deck is wanted for live teaching, generate it from `site/content.py`.
 - **Six notebooks instead of one.** The request said "a companion Jupyter notebook". It was split per module because a single notebook would be about 150 cells with roughly 20 minutes of CPU training top to bottom, hard to restart midway. Shared code lives in `notebooks/blcourse.py`.
 - **Source of truth:** `notebooks/src/*.py` (jupytext percent format) → `build_notebooks.sh` → `.ipynb`, committed without outputs. Site content lives in `site/content.py` and is rendered by `site/build.py`.
+
+## Reorder for learnability (from the content review)
+
+The review found three problems, fixed together:
+
+**1. Hidden prerequisites.** Module 1 used `F.cross_entropy`, mini-batches, epochs, AdamW, a learning-rate schedule, augmentation and `eval()` without explaining any of them; cross-entropy was first explained in M2. Code from M2 on assumes `(B, T, C)` shapes. M0 now teaches them before anything uses them:
+- §0.4 *From numbers to classes*: logits, softmax, cross-entropy, why logs. Trains the §0.0 digits with the five-line loop (94% test).
+- §0.5 *The loop at scale*: mini-batch, epoch, shuffle, optimizer (SGD vs Adam), schedule, augmentation, eval/no_grad, hyperparameters, each mapped to a line of M1's CNN loop. Demo: in 15 epochs full-batch SGD reaches test loss 1.33; mini-batches reach about 0.2.
+- §0.6 *Vectors, matrices and shapes*: dot product as match score, matmul, axis conventions.
+- M2 explains sampling temperature where `generate` first uses it.
+
+**2. Film order vs dependency order.** The modules now are:
+
+| Module | Contents | Was |
+|---|---|---|
+| M0 The Loop | + classification, the loop at scale, shapes | M0 |
+| M1 One Line, Then Many | perceptron → … → HOG → **SVM** → CNN → ResNet (the lab used an SVM before §1.5 taught it) | M1 |
+| M2 Sequences | + encoder vs decoder (BERT/GPT), + today's parts list (RoPE, RMSNorm, SwiGLU) | M2, M4.1, M3.3 |
+| M3 Generating Data | GAN, diffusion | M3.1–3.2 |
+| M4 A Real LLM | meet it, MoE, quantization, LoRA, prompting, RLHF/Bradley–Terry, DPO, on one loaded model | M3.4–3.8, M4.2–4.3 |
+| M5 Scale and Long Context | scaling and serving cost, n² and the KV cache, FlashAttention, needle in a haystack, linear time, baselines | M5, M4.4–4.5 |
+
+The cost: a module no longer maps to one continuous stretch of the film. `SONG` in `build.py` now maps each film segment to the module that teaches it; module pages link every stretch they cover, the index timeline shows modules as scattered segments, and the reel assigns each still to the module whose concept uses it. Every concept keeps its own still and timestamp, so the film still orients the reader.
+
+Implementation notes: M4 loads the LLM once; DPO calls `reset_lora` (zero the §4.4 patch) instead of loading a second copy and wrapping LoRA twice. M5 loads the LLM itself for the needle test. The duplicate `bench()` was removed. New site concepts: *From numbers to classes*, *The loop at scale*, *Vectors, matrices and shapes*, *Meet a real LLM*. 10 glossary terms added (114 total).
+
+**3. Too little practice.** Before, M2 and M3 had no exercises and most cells ran without the learner writing code. Now:
+- **13 "Your turn" exercises with automatic checks**, two or three per module: numeric gradient, cross-entropy (with the overflow trap), shapes; perceptron update, hand-wired XOR; one attention row, temperature; DDPM forward noising; group quantization, LoRA parameter count, DPO loss; KV-cache bytes, streaming softmax. `check(name, fn)` (in `blcourse.py`) runs the tests in `notebooks/exercises.py` and prints ✓ / ✗ with the failing case / "not attempted", and never stops the notebook. `BASELINE_SOLUTIONS=1` runs the reference solutions through the same tests, so a wrong test or reference fails loudly in course testing.
+- **"Predict first" prompts** before every long or surprising cell (about 15).
+- **Checkpoint answers**, folded, in every notebook and on every module page.
+
+Not done from the review (priorities 4–5): a core-path toggle for the side boxes, per-module learning objectives, "uses" chips and deep links between site and notebooks, "read more" source links, a course-wide leaderboard, and metrics beyond loss/accuracy.
 
 ## Starting before the model (feedback: "take a step back for programmers")
 
@@ -104,18 +136,19 @@ Each concept section, in reading order:
 
 ## Verification status
 
-All runs on an M1 Max with 64 GB, each notebook executed top to bottom with nbconvert.
+After the reorder, all six notebooks were run top to bottom twice on an M1 Max with 64 GB: on the `laptop` tier forced to CPU in **student mode** (every exercise unattempted, which proves no later cell depends on a student's answer), and on `mac-max` (MPS) with **`BASELINE_SOLUTIONS=1`** (all 13 reference solutions pass their tests inside the notebooks).
 
-| Notebook | `laptop` on CPU | `mac-max` on MPS |
+| Notebook | `laptop` on CPU, student mode | `mac-max` on MPS, solutions |
 |---|---|---|
-| M0 | 11 s ✓ | 9 s ✓ |
-| M1 | 210 s ✓ (CNN 68.5% vs HOG 55.8%) | 380 s ✓ (88.6% vs 56.5%) |
-| M2 | 241 s ✓ (LSTM 1.538, GPT 1.542: a tie) | 591 s ✓ (LSTM 1.505, GPT 1.467: the gap opens) |
-| M3 | 115 s ✓ | 183 s ✓ (Qwen2.5-1.5B) |
-| M4 | 215 s ✓ (DPO 102 → 40 words; needles 20/20) | 220 s ✓ (100 → 41 words; misses needles from 1K up) |
-| M5 | 100 s ✓ (α ≈ 0.10, floor ≈ 0) | 176 s ✓ (curve flattens to floor ≈ 1.24: data-limited) |
+| M0 | 10 s ✓ | 10 s ✓ (3/3 exercises) |
+| M1 | 159 s ✓ (CNN 68.5% vs HOG + SVM 55.8%) | 250 s ✓ (88.6% vs 56.5%; 2/2) |
+| M2 | 244 s ✓ (LSTM and GPT tie at 1.54) | 587 s ✓ (GPT 1.49, both early-stopped; 2/2) |
+| M3 | 23 s ✓ | 37 s ✓ (1/1) |
+| M4 | 282 s ✓ (DPO 102 → 51 words) | 214 s ✓ (100 → 56 words; 3/3) |
+| M5 | 130 s ✓ (α ≈ 0.10; needles 20/20 up to 2K) | 319 s ✓ (floor ≈ 1.24; misses needles from 1K up; 2/2) |
 
-- M0 and M1 on `mac-max` ran before the TinyGPT and `load_llm` changes; neither notebook uses those.
+DPO's effect is a little smaller than before the reorder (it was 102 → 40): it now starts from a reset LoRA patch whose random A differs from a freshly added one. The site says "roughly halves".
+
 - **`cuda` tier: not run.** No NVIDIA GPU was available. Its sizes are extrapolated, not measured. *Open:* run it once on a 12–24 GB card.
 - **Site:** checked at 1440 px and 375 px, with no horizontal scroll on any page, KaTeX rendering, and tooltips tested with mouse hover and touch tap. 155 glossary links, each at its term's first mention. Not tested: a real phone, or screen-reader output of the tooltips.
 
