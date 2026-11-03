@@ -29,7 +29,7 @@ jobs:
       - name: Collect what gets published
         run: |
           mkdir _site
-          cp course/site/*.html course/site/style.css _site/
+          cp course/site/*.html course/site/style.css course/site/film.jpg _site/
           cp -r course/site/stills _site/stills
           touch _site/.nojekyll
       - uses: actions/configure-pages@v5

@@ -28,8 +28,7 @@
 
 <section class="film" id="film">
 <div class="label"><span class="now">The film</span> · <em>Baseline</em> · 4:07 · <a href="https://youtu.be/Qy3_4oXoS6c" target="_blank" rel="noopener">open on YouTube ↗</a></div>
-<div class="player"><iframe src="https://www.youtube-nocookie.com/embed/Qy3_4oXoS6c?rel=0" title="Baseline, the music video" loading="lazy"
-  allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
+<a class="player" id="film-player" href="https://youtu.be/Qy3_4oXoS6c" target="_blank" rel="noopener" data-embed="https://www.youtube-nocookie.com/embed/Qy3_4oXoS6c?rel=0&amp;autoplay=1"><img src="film.jpg" alt="Baseline, the music video: play" width="1280" height="720"><span class="play">▶</span></a>
 <p class="prose">Watch it once all the way through before you start. You won't follow most of it yet, and that's the point: by the end of the course every shot will make sense. After that, each module links to the stretches of the film it covers, and every still's timecode jumps to that exact moment.</p>
 </section>
 
@@ -71,6 +70,21 @@ uv run jupyter lab notebooks/   # open 00_the_loop.ipynb first</code></pre>
 </table></div>
 <p>Every module ends with checkpoint questions with folded answers, and every lab has <em>Predict first</em> prompts and <em>Your turn</em> exercises with automatic checks. The reference solutions are in <code>notebooks/exercises.py</code>. The <a href="reel.html">reel</a> lists every still in film order, with the module that explains it.</p>
 </div>
+<script>
+/* The film: a poster until played. Served over http(s), a click swaps in YouTube's player; opened as a local file
+   (no origin for YouTube to check, which shows its error 153), the link opens YouTube instead. */
+(() => {
+  const a = document.getElementById('film-player');
+  if (!a || !location.protocol.startsWith('http')) return;
+  a.addEventListener('click', (e) => {
+    e.preventDefault();
+    const f = document.createElement('iframe');
+    f.src = a.dataset.embed; f.title = 'Baseline, the music video'; f.allowFullscreen = true;
+    f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen'; f.referrerPolicy = 'strict-origin-when-cross-origin';
+    a.replaceWith(Object.assign(document.createElement('div'), { className: 'player' })); document.querySelector('section.film .player').append(f);
+  });
+})();
+</script>
 </main>
 <footer>
   A first machine-learning course built on the music video <a href="https://youtu.be/Qy3_4oXoS6c">Baseline</a>. Stills are rendered from the film's engine (<code>app/</code>).

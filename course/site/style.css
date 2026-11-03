@@ -174,3 +174,8 @@ section.film .player iframe { position: absolute; inset: 0; width: 100%; height:
 section.film > p { margin-top: 14px; color: var(--ash); }
 .bar nav a.film { color: var(--mag); }
 .bar nav a.film:hover { color: var(--mag-hot); }
+section.film a.player { display: block; }
+section.film .player img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+section.film .player .play { position: absolute; left: 50%; top: 50%; width: 84px; height: 84px; margin: -42px 0 0 -42px; border-radius: 50%;
+  background: var(--mag); color: var(--ink); font-size: 34px; line-height: 84px; text-align: center; box-shadow: 0 6px 30px rgb(0 0 0 / 0.5); }
+section.film a.player:hover .play { background: var(--mag-hot); }
