@@ -60,11 +60,12 @@ law = lambda n, a, alpha, c: a * n ** (-alpha) + c
 # a loss floor must lie between 0 and the best loss we've seen; the exponent stays in a sane range
 (a, alpha, c), _ = curve_fit(law, Ns, Ls, p0=(10, 0.3, 0.5 * Ls.min()), bounds=([0, 0, 0], [np.inf, 2, Ls.min()]), maxfev=20000)
 fig, ax = plt.subplots()
-ax.scatter(Ns, Ls, c=MAG, s=40, zorder=3)
+ax.scatter(Ns, Ls, c='C0', s=40, zorder=3)
 nn_ = np.geomspace(Ns.min() / 2, Ns.max() * 20, 100)
-ax.plot(nn_, law(nn_, a, alpha, c), c=BONE, lw=1.2, label=f'fit: L = {a:.2f}·N^−{alpha:.3f} + {c:.2f}')
-ax.axhline(c, c=GRAPHITE, ls=':', lw=1)
-ax.set(xscale='log', yscale='log', xlabel='non-embedding parameters N', ylabel='val loss (nats/char)', title='YOUR SCALING LAW'); ax.legend(fontsize=8)
+ax.plot(nn_, law(nn_, a, alpha, c), c='C1', lw=1.2, label=f'fit: L = {a:.2f}·N^−{alpha:.3f} + {c:.2f}')
+if c > 0.01 * Ls.min():  # draw the floor only if the fit found one; a floor near 0 would stretch the log axis down to it
+    ax.axhline(c, c='gray', ls=':', lw=1, label=f'floor c = {c:.2f}')
+ax.set(xscale='log', yscale='log', xlabel='non-embedding parameters N', ylabel='val loss (nats/char)', title='Your scaling law'); ax.legend(fontsize=8)
 for r in runs:
     print(f"width {r['width']:3d}: N = {r['N']:>9,}  val {r['val']:.3f}  ≈{r['flops']:.1e} FLOPs  {r['secs']:.0f}s")
 print(f'extrapolated: 10× the largest model → {law(Ns.max() * 10, a, alpha, c):.3f}  (floor c = {c:.2f})')
@@ -94,9 +95,9 @@ for name, (N, D) in models.items():
 
 days = np.arange(0, 366)
 fig, ax = plt.subplots()
-for (name, (N, D)), c in zip(models.items(), (ASH, MAG)):
+for (name, (N, D)), c in zip(models.items(), ('C0', 'C1')):
     ax.plot(days, (train_flops(N, D) + serve_flops(N, served_per_day) * days) / 1e24, c=c, label=name)
-ax.set(xlabel='days in production', ylabel='total compute (10²⁴ FLOPs)', title='TRAINING + SERVING'); ax.legend(fontsize=8);
+ax.set(xlabel='days in production', ylabel='total compute (10²⁴ FLOPs)', title='Training + serving'); ax.legend(fontsize=8);
 
 
 
@@ -268,8 +269,8 @@ for n in CFG['attn_lengths']:
     print(f'n={n:6d}  naive {rows[-1][1]:8.1f} ms   SDPA {rows[-1][2]:8.1f} ms   naive score matrix {rows[-1][3]:8.0f} MB')
 ns = [r[0] for r in rows]
 fig, ax = plt.subplots()
-ax.plot(ns, [r[1] for r in rows], 'o-', c=ASH, label='naive (materializes n×n)'); ax.plot(ns, [r[2] for r in rows], 'o-', c=MAG, label='fused SDPA')
-ax.set(xscale='log', yscale='log', xlabel='sequence length n', ylabel='ms per call', title=f'ATTENTION · 4 HEADS · {DEVICE.upper()}'); ax.legend();
+ax.plot(ns, [r[1] for r in rows], 'o-', label='naive (materializes n×n)'); ax.plot(ns, [r[2] for r in rows], 'o-', label='fused SDPA')
+ax.set(xscale='log', yscale='log', xlabel='sequence length n', ylabel='ms per call', title=f'Attention, 4 heads, on {DEVICE}'); ax.legend();
 
 
 
@@ -312,12 +313,11 @@ with timer('needle in a haystack:'):
             ok, out = niah(L, d); grid[i, j] = ok
         print(f'{L:6d} tokens: {int(grid[:, j].sum())}/{len(CFG["niah_depths"])} found   (last answer: {out!r})')
 
-from matplotlib.colors import ListedColormap
 fig, ax = plt.subplots(figsize=(6, 3.2))
-ax.imshow(grid, cmap=ListedColormap([MAG_DARK, MAG]), vmin=0, vmax=1, aspect='auto'); ax.grid(False)
+ax.imshow(grid, cmap='RdYlGn', vmin=0, vmax=1, aspect='auto'); ax.grid(False)
 ax.set(xticks=range(len(CFG['niah_lengths'])), xticklabels=CFG['niah_lengths'], yticks=range(len(CFG['niah_depths'])),
        yticklabels=[f'{d:.0%}' for d in CFG['niah_depths']], xlabel='context length (tokens)', ylabel='needle depth',
-       title=f'NEEDLE IN A HAYSTACK · {CFG["llm"].split("/")[-1]}');
+       title=f'Needle in a haystack (green = found): {CFG["llm"].split("/")[-1]}');
 
 
 
@@ -376,11 +376,11 @@ lengths = [n * 2 for n in CFG['attn_lengths']]
 soft = [bench(lambda q, k, v: F.scaled_dot_product_attention(q, k, v, is_causal=True), n) for n in lengths]
 lin = [bench(linear_attention_chunked, n) for n in lengths]
 fig, ax = plt.subplots()
-ax.plot(lengths, soft, 'o-', c=ASH, label='softmax attention (fused, causal)')
-ax.plot(lengths, lin, 'o-', c=MAG, label='linear attention (chunked, plain PyTorch)')
-ax.plot(lengths, [soft[0] * (n / lengths[0]) ** 2 for n in lengths], ':', c=GRAPHITE, label='∝ n²')
-ax.plot(lengths, [lin[0] * (n / lengths[0]) for n in lengths], '--', c=GRAPHITE, label='∝ n')
-ax.set(xscale='log', yscale='log', xlabel='sequence length n', ylabel='ms', title='QUADRATIC VS LINEAR'); ax.legend(fontsize=8);
+ax.plot(lengths, soft, 'o-', label='softmax attention (fused, causal)')
+ax.plot(lengths, lin, 'o-', label='linear attention (chunked, plain PyTorch)')
+ax.plot(lengths, [soft[0] * (n / lengths[0]) ** 2 for n in lengths], ':', c='gray', label='∝ n²')
+ax.plot(lengths, [lin[0] * (n / lengths[0]) for n in lengths], '--', c='gray', label='∝ n')
+ax.set(xscale='log', yscale='log', xlabel='sequence length n', ylabel='ms', title='Quadratic vs linear'); ax.legend(fontsize=8);
 
 
 
@@ -464,7 +464,7 @@ still(236.33)
 # 2. Build the dumbest reasonable baseline and record its validation score.
 # 3. Try a few-shot prompt with this course's LLM. Score it the same way.
 # 4. If it's worth it, LoRA-fine-tune (Module 4) and score again.
-# 5. Report all three on the **test** set once, in a little leaderboard of your own. Magenta goes on the winner.
+# 5. Report all three on the **test** set once, in a little leaderboard of your own. Highlight the winner.
 #
 # Then wait for the next deadline.
 

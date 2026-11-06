@@ -97,9 +97,9 @@ Each concept section, in reading order:
 
 ## Visual style
 
-- Tokens from `docs/DESIGN.md`: ink `#0B0A0D`, bone `#EDEAF2`, ash/graphite grays, and **magenta `#FF2E7E` only for "now / state of the art"**: winners in plots, the current timecode, the one-line rule. Type: Archivo (wide, 900, uppercase) for headings, IBM Plex Mono for labels and captions.
+- Tokens from `docs/DESIGN.md`: ink `#0B0A0D`, bone `#EDEAF2`, ash/graphite grays, and **magenta `#FF2E7E` only for "now / state of the art"**: the current timecode, the one-line rule. Type: Archivo (wide, 900, uppercase) for headings, IBM Plex Mono for labels and captions.
 - The site is dark-only, matching the film.
-- The notebook plots use a matching matplotlib style (`blcourse.use_style()`), set in the repo's own IBM Plex Mono, with an ink → magenta → bone colormap.
+- **Notebook plots are plain matplotlib** (revised after feedback: "the output graphs should be visually distinct from the video stills"). They first used the film's look: ink background, IBM Plex Mono, uppercase titles, an ink → magenta → bone colormap. In a notebook that put a plot of the student's own result right next to a frame of the film, and the two read as the same kind of thing. Now `blcourse.use_style()` only sets a wide default figure size. Plots use the default color cycle (blue `C0`, orange `C1`), with orange for the winner or the "after", black for decision lines and gray for reference lines. Images use stock colormaps: `gray_r` for digits, `RdBu_r` for signed weights, default `viridis` for heatmaps, `RdYlGn` for found/missed. Titles are sentence case. The film's colors survive only in the caption under each still.
 - **Hero images:** module pages put the title first and the still below it. Stills with large lyric text behind the title hurt legibility, which was tried and rejected. The index hero uses the plotter's first shot (t = 5.5 s), which is mostly empty dark space.
 
 ## Stills from the film
@@ -151,7 +151,7 @@ After the reorder, all six notebooks were run top to bottom twice on an M1 Max w
 | M4 | 282 s ✓ (DPO 102 → 51 words) | 214 s ✓ (100 → 56 words; 3/3) |
 | M5 | 130 s ✓ (α ≈ 0.10; needles 20/20 up to 2K) | 319 s ✓ (floor ≈ 1.24; misses needles from 1K up; 2/2) |
 
-**Committed outputs** come from a third run: `laptop` tier on MPS, student mode, 8.4 min in all (M0 10 s, M1 82 s with CNN 68.9% vs 55.8%, M2 166 s, M3 23 s, M4 109 s with DPO 102 → 40 words, M5 81 s with needles 20/20 up to 2K). One stderr line was removed from three of them: torch's macOS-only "Redirects are currently not supported" warning, which `blcourse.py` now silences.
+**Committed outputs** come from a third run: `laptop` tier on MPS, student mode, 8.0 min in all (M0 9 s, M1 79 s with CNN 68.9% vs 55.8%, M2 161 s, M3 23 s, M4 105 s with DPO 102 → 40 words, M5 76 s with needles 20/20 up to 2K). `blcourse.py` silences torch's macOS-only "Redirects are currently not supported" warning, which otherwise lands in three of them.
 
 DPO's effect varies with the hardware and the LoRA patch's random start (it is reset before DPO): 102 → 51 words on CPU, 102 → 40 on MPS, 100 → 56 on `mac-max`. The site says "roughly halve … to 40–55".
 

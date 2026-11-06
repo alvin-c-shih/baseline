@@ -58,8 +58,8 @@ for step in range(CFG['gan_steps'] + 1):
 
 fig, axes = plt.subplots(1, len(gan_log), figsize=(2.2 * len(gan_log), 2.4))
 for ax, (step, s, m, _) in zip(axes, gan_log):
-    ax.scatter(*CENTERS.T, s=40, facecolors='none', edgecolors=GRAPHITE)
-    ax.scatter(*s.T, s=1, c=MAG, alpha=0.4); ax.set(xlim=(-5.5, 5.5), ylim=(-5.5, 5.5), title=f'{step} · {m}/25'); ax.axis('off')
+    ax.scatter(*CENTERS.T, s=40, facecolors='none', edgecolors='k')
+    ax.scatter(*s.T, s=1, c='C0', alpha=0.4); ax.set(xlim=(-5.5, 5.5), ylim=(-5.5, 5.5), title=f'{step} · {m}/25'); ax.axis('off')
 
 
 
@@ -124,7 +124,7 @@ x0, eps = real_batch(2000), torch.randn(2000, 2)
 fig, axes = plt.subplots(1, 5, figsize=(11, 2.4))
 for ax, t in zip(axes, (0, 50, 200, 400, 999)):
     xt = abar[t].sqrt() * x0 + (1 - abar[t]).sqrt() * eps
-    ax.scatter(*xt.T, s=1, c=ASH, alpha=0.4); ax.set(xlim=(-5.5, 5.5), ylim=(-5.5, 5.5), title=f'x_t · t = {t}'); ax.axis('off')
+    ax.scatter(*xt.T, s=1, c='C0', alpha=0.4); ax.set(xlim=(-5.5, 5.5), ylim=(-5.5, 5.5), title=f'x_t · t = {t}'); ax.axis('off')
 
 
 
@@ -161,7 +161,7 @@ def ddpm_sample(n, keep=(999, 600, 300, 100, 0)):
 frames = ddpm_sample(2000)
 fig, axes = plt.subplots(1, len(frames), figsize=(2.2 * len(frames), 2.4))
 for ax, (t, s) in zip(axes, frames.items()):
-    ax.scatter(*CENTERS.T, s=40, facecolors='none', edgecolors=GRAPHITE); ax.scatter(*s.T, s=1, c=MAG, alpha=0.4)
+    ax.scatter(*CENTERS.T, s=40, facecolors='none', edgecolors='k'); ax.scatter(*s.T, s=1, c='C0', alpha=0.4)
     ax.set(xlim=(-5.5, 5.5), ylim=(-5.5, 5.5), title=f't = {t}'); ax.axis('off')
 print(f'DDPM: modes {modes_covered(frames[0])[0]}/25   vs   GAN: {gan_log[-1][2]}/25')
 

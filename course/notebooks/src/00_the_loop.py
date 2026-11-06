@@ -56,7 +56,7 @@ imgs, labels = digits.images, digits.target
 
 fig, axes = plt.subplots(1, 10, figsize=(10, 1.3))
 for d, ax in enumerate(axes):
-    ax.imshow(imgs[np.where(labels == d)[0][0]], cmap='bone'); ax.set_title(str(d), fontsize=9); ax.axis('off')
+    ax.imshow(imgs[np.where(labels == d)[0][0]], cmap='gray_r'); ax.set_title(str(d), fontsize=9); ax.axis('off')
 
 def classify(img):
     """Hand-written rules. Each one is reasonable; together they still fail."""
@@ -92,9 +92,9 @@ print(f'learned template: {learned.score(Xte, yte):.0%} correct on digits it nev
 fig, axes = plt.subplots(1, 10, figsize=(10, 1.6))
 for d, ax in enumerate(axes):
     w = learned.coef_[d].reshape(8, 8); lim = np.abs(w).max()
-    ax.imshow(w, cmap='baseline', vmin=-lim, vmax=lim); ax.set_title(str(d), fontsize=9); ax.axis('off')
-fig.suptitle("THE 650 BLANKS, FILLED IN · EACH DIGIT'S PIXEL WEIGHTS (BRIGHT = VOTES FOR, DARK = AGAINST)",
-             x=0.01, y=1.04, ha='left', fontsize=9, color=BONE);
+    ax.imshow(w, cmap='RdBu_r', vmin=-lim, vmax=lim); ax.set_title(str(d), fontsize=9); ax.axis('off')
+fig.suptitle("The 650 blanks, filled in: each digit's pixel weights (red = votes for, blue = against)",
+             x=0.01, y=1.04, ha='left', fontsize=9);
 
 
 
@@ -120,8 +120,8 @@ x = np.random.uniform(-3, 3, 60)
 y = 1.7 * x - 0.4 + np.random.normal(0, 0.8, x.shape)
 
 fig, ax = plt.subplots()
-ax.scatter(x, y, s=14, c=ASH)
-ax.set(title='DATA · 60 POINTS', xlabel='x', ylabel='y');
+ax.scatter(x, y, s=14)
+ax.set(title='Data: 60 points', xlabel='x', ylabel='y');
 
 
 
@@ -153,12 +153,12 @@ for step in range(60):
 print(f'learned w={w:.3f} b={b:.3f}   (truth: 1.7, -0.4)')
 
 fig, (a1, a2) = plt.subplots(1, 2, figsize=(10, 3.4))
-a1.plot([t[2] for t in trace], c=BONE); a1.set(title='LOSS PER STEP', xlabel='step', yscale='log')
+a1.plot([t[2] for t in trace]); a1.set(title='Loss per step', xlabel='step', yscale='log')
 xs = np.linspace(-3, 3, 2)
 for i in (0, 3, 10):
-    a2.plot(xs, trace[i][0] * xs + trace[i][1], c=GRAPHITE, lw=1)
-a2.scatter(x, y, s=10, c=ASH); a2.plot(xs, w * xs + b, c=MAG, lw=2.5, label='after 60 steps')
-a2.set(title='THE LINE, LEARNING'); a2.legend();
+    a2.plot(xs, trace[i][0] * xs + trace[i][1], c='lightgray', lw=1)
+a2.scatter(x, y, s=10, c='C0'); a2.plot(xs, w * xs + b, c='C1', lw=2.5, label='after 60 steps')
+a2.set(title='The line, learning'); a2.legend();
 
 
 
@@ -242,9 +242,9 @@ with torch.no_grad():
 probs = scores.softmax(-1)
 label = Ltr[0].item()
 fig, (a1, a2, a3) = plt.subplots(1, 3, figsize=(11, 2.8), gridspec_kw={'width_ratios': [1, 2, 2]})
-a1.imshow(Dtr[0].reshape(8, 8), cmap='bone'); a1.set_title(f'LABEL {label}'); a1.axis('off')
-a2.bar(range(10), scores, color=GRAPHITE); a2.set(title='10 SCORES (LOGITS) · UNTRAINED', xticks=range(10))
-a3.bar(range(10), probs, color=[MAG if i == label else GRAPHITE for i in range(10)]); a3.set(title='SOFTMAX → PROBABILITIES', xticks=range(10))
+a1.imshow(Dtr[0].reshape(8, 8), cmap='gray_r'); a1.set_title(f'Label {label}'); a1.axis('off')
+a2.bar(range(10), scores); a2.set(title='10 scores (logits), untrained', xticks=range(10))
+a3.bar(range(10), probs, color=['C1' if i == label else 'C0' for i in range(10)]); a3.set(title='Softmax → probabilities', xticks=range(10))
 print(f'loss for this image = −log p(label {label}) = −log {probs[label]:.3f} = {-probs[label].log():.3f}')
 
 
@@ -326,9 +326,9 @@ runs = {'full batch · SGD (1 step per epoch)': run('sgd', len(Dtr)),
         'mini-batch 32 · SGD (40 steps per epoch)': run('sgd', 32),
         'mini-batch 32 · Adam': run('adam', 32)}
 fig, ax = plt.subplots()
-for (name, curve), c in zip(runs.items(), (ASH, BONE, MAG)):
+for (name, curve), c in zip(runs.items(), ('C0', 'C1', 'C2')):
     ax.plot(range(1, 16), curve, 'o-', c=c, ms=3, label=name)
-ax.set(xlabel='epoch', ylabel='test loss', title='SAME DATA, SAME EPOCHS, DIFFERENT LOOPS'); ax.legend(fontsize=8);
+ax.set(xlabel='epoch', ylabel='test loss', title='Same data, same epochs, different loops'); ax.legend(fontsize=8);
 
 
 
@@ -417,13 +417,13 @@ for d in degrees:
 
 best = degrees[int(np.argmin(va_err))]
 fig, (a1, a2) = plt.subplots(1, 2, figsize=(10, 3.4))
-a1.plot(degrees, tr_err, c=ASH, label='train'); a1.plot(degrees, va_err, c=BONE, label='validation')
-a1.axvline(best, c=MAG, ls='--', lw=1); a1.set(yscale='log', xlabel='polynomial degree', title='ERROR VS. CAPACITY'); a1.legend()
+a1.plot(degrees, tr_err, label='train'); a1.plot(degrees, va_err, label='validation')
+a1.axvline(best, c='gray', ls='--', lw=1); a1.set(yscale='log', xlabel='polynomial degree', title='Error vs. capacity'); a1.legend()
 xs = np.linspace(-1, 1, 300)
-a2.scatter(xtr, ytr, c=ASH, s=16)
-a2.plot(xs, np.polyval(fits[15], xs), c=GRAPHITE, label='degree 15 (memorized)')
-a2.plot(xs, np.polyval(fits[best], xs), c=MAG, lw=2.5, label=f'degree {best} (best on validation)')
-a2.set(ylim=(-2, 2), title='TWO FITS'); a2.legend(fontsize=8);
+a2.scatter(xtr, ytr, c='k', s=16)
+a2.plot(xs, np.polyval(fits[15], xs), c='C0', label='degree 15 (memorized)')
+a2.plot(xs, np.polyval(fits[best], xs), c='C1', lw=2.5, label=f'degree {best} (best on validation)')
+a2.set(ylim=(-2, 2), title='Two fits'); a2.legend(fontsize=8);
 
 
 

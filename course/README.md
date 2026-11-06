@@ -77,12 +77,12 @@ Each notebook was run top to bottom with nbconvert on an M1 Max with 64 GB. The 
 
 | Notebook | `laptop` on CPU (student mode) | `laptop` on MPS (student mode, committed) | `mac-max` on MPS (reference solutions) |
 |---|---|---|---|
-| `00_the_loop` | 10 s | 10 s | 10 s |
-| `01_one_line_then_many` | 2.7 min (CNN 68.5% vs HOG + SVM 55.8%) | 1.4 min (CNN 68.9% vs 55.8%) | 4.2 min (CNN 88.6% vs 56.5%) |
-| `02_sequences` | 4.1 min | 2.8 min | 9.8 min (GPT beats LSTM; both early-stopped) |
+| `00_the_loop` | 10 s | 9 s | 10 s |
+| `01_one_line_then_many` | 2.7 min (CNN 68.5% vs HOG + SVM 55.8%) | 1.3 min (CNN 68.9% vs 55.8%) | 4.2 min (CNN 88.6% vs 56.5%) |
+| `02_sequences` | 4.1 min | 2.7 min | 9.8 min (GPT beats LSTM; both early-stopped) |
 | `03_generating_data` | 23 s | 23 s | 37 s |
 | `04_a_real_llm` | 4.7 min (DPO: 102 → 51 words) | 1.8 min (DPO: 102 → 40 words) | 3.6 min (DPO: 100 → 56 words) |
-| `05_scale_and_long_context` | 2.2 min (needles 20/20 up to 2K) | 1.4 min (needles 20/20 up to 2K) | 5.3 min (misses needles from 1K up) |
+| `05_scale_and_long_context` | 2.2 min (needles 20/20 up to 2K) | 1.3 min (needles 20/20 up to 2K) | 5.3 min (misses needles from 1K up) |
 
 *Student mode* leaves every exercise unattempted, which proves no later cell depends on a student's answer. `BASELINE_SOLUTIONS=1` runs each exercise's reference solution through its tests instead. The first runs of M1, M2, M4 and M5 also include downloads.
 

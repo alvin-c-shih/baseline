@@ -36,8 +36,8 @@ with torch.no_grad():
 top = p.topk(10)
 fig, ax = plt.subplots(figsize=(6, 3))
 labels = [repr(tok.decode([i])) for i in top.indices.tolist()]
-ax.barh(labels, top.values.cpu(), color=[MAG] + [GRAPHITE] * 9); ax.invert_yaxis()
-ax.set(title=f'P(NEXT TOKEN | "…just a")', xlabel='probability');
+ax.barh(labels, top.values.cpu(), color=['C1'] + ['C0'] * 9); ax.invert_yaxis()
+ax.set(title=f'P(next token | "…just a")', xlabel='probability');
 
 
 
@@ -87,8 +87,8 @@ x, y, c = moe_batch(4000); _, topi, _ = moe(x)
 routing = torch.zeros(8, 8)
 for ci in range(8):
     routing[ci] = torch.bincount(topi[c == ci].flatten(), minlength=8).float() / (2 * (c == ci).sum())
-fig, ax = plt.subplots(figsize=(4.4, 4)); ax.imshow(routing, cmap='baseline', vmin=0, vmax=1); ax.grid(False)
-ax.set(xlabel='expert', ylabel='input cluster', title='WHERE THE ROUTER SENDS EACH CLUSTER')
+fig, ax = plt.subplots(figsize=(4.4, 4)); ax.imshow(routing, vmin=0, vmax=1); ax.grid(False)
+ax.set(xlabel='expert', ylabel='input cluster', title='Where the router sends each cluster')
 print(f'final MSE {F.mse_loss(moe(x)[0], y).item():.3f}; each token uses 2/8 experts = 25% of expert compute')
 
 
@@ -250,7 +250,7 @@ with timer('LoRA fine-tune:'):
             ids, n = chat_ids(tok, Q.format(name), card)
             loss = loss - answer_logprob(llm, ids, n).mean() / len(batch)
         opt.zero_grad(); loss.backward(); opt.step(); losses.append(loss.item())
-fig, ax = plt.subplots(figsize=(6, 2.6)); ax.plot(losses, c=MAG); ax.set(title='LORA TRAINING LOSS (NATS PER ANSWER)', xlabel='step');
+fig, ax = plt.subplots(figsize=(6, 2.6)); ax.plot(losses); ax.set(title='LoRA training loss (nats per answer)', xlabel='step');
 
 
 
@@ -413,8 +413,8 @@ with timer('DPO:'):
         opt.zero_grad(); loss.backward(); opt.step()
         log.append((loss.item(), margin.item()))
 fig, ax = plt.subplots(figsize=(6, 2.6))
-ax.plot([m for _, m in log], c=MAG); ax.axhline(0, c=GRAPHITE, lw=1)
-ax.set(title='DPO IMPLICIT REWARD MARGIN (CHOSEN − REJECTED)', xlabel='step');
+ax.plot([m for _, m in log]); ax.axhline(0, c='gray', lw=1)
+ax.set(title='DPO implicit reward margin (chosen − rejected)', xlabel='step');
 
 
 

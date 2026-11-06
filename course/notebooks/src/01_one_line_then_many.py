@@ -53,13 +53,13 @@ def perceptron(y, epochs=25, lr=0.1):
 fig, axes = plt.subplots(1, 3, figsize=(10, 3.2))
 for ax, (name, y) in zip(axes, TARGETS.items()):
     w, b, err = perceptron(np.array(y, float))
-    ax.scatter(*X.T, c=[MAG if t else GRAPHITE for t in y], s=160, edgecolors=BONE)
+    ax.scatter(*X.T, c=['C1' if t else 'C0' for t in y], s=160, edgecolors='k')
     xs = np.linspace(-0.5, 1.5, 2)
     if abs(w[1]) > 1e-9:
-        ax.plot(xs, -(w[0] * xs + b) / w[1], c=BONE)
+        ax.plot(xs, -(w[0] * xs + b) / w[1], c='k')
     elif abs(w[0]) > 1e-9:
-        ax.axvline(-b / w[0], c=BONE)
-    ax.set(xlim=(-0.5, 1.5), ylim=(-0.5, 1.5), title=f'{name} · ERRORS {err}/4', aspect='equal')
+        ax.axvline(-b / w[0], c='k')
+    ax.set(xlim=(-0.5, 1.5), ylim=(-0.5, 1.5), title=f'{name}: {err}/4 errors', aspect='equal')
 plt.tight_layout()
 
 
@@ -120,14 +120,14 @@ print('outputs', np.round(yhat, 3), ' targets', Y)
 # %%
 fig, (a1, a2) = plt.subplots(1, 2, figsize=(9, 3.8))
 xs = np.linspace(-0.5, 1.5, 2)
-a1.scatter(*X.T, c=[MAG if t else GRAPHITE for t in Y], s=160, edgecolors=BONE)
+a1.scatter(*X.T, c=['C1' if t else 'C0' for t in Y], s=160, edgecolors='k')
 for j in range(2):
-    a1.plot(xs, -(W1[j, 0] * xs + b1[j]) / W1[j, 1], c=ASH, lw=1, label=f'hidden unit h{j+1}')
-a1.set(xlim=(-0.5, 1.5), ylim=(-0.5, 1.5), aspect='equal', title='INPUT SPACE: TWO LINES'); a1.legend(fontsize=8)
-a2.scatter(*H.T, c=[MAG if t else GRAPHITE for t in Y], s=160, edgecolors=BONE)
+    a1.plot(xs, -(W1[j, 0] * xs + b1[j]) / W1[j, 1], c='gray', lw=1, label=f'hidden unit h{j+1}')
+a1.set(xlim=(-0.5, 1.5), ylim=(-0.5, 1.5), aspect='equal', title='Input space: two lines'); a1.legend(fontsize=8)
+a2.scatter(*H.T, c=['C1' if t else 'C0' for t in Y], s=160, edgecolors='k')
 hs = np.linspace(0, 1, 2)
-a2.plot(hs, -(w2[0] * hs + b2) / w2[1], c=MAG)
-a2.set(xlim=(-0.1, 1.1), ylim=(-0.1, 1.1), aspect='equal', title='HIDDEN SPACE: ONE LINE', xlabel='h1', ylabel='h2')
+a2.plot(hs, -(w2[0] * hs + b2) / w2[1], c='k')
+a2.set(xlim=(-0.1, 1.1), ylim=(-0.1, 1.1), aspect='equal', title='Hidden space: one line', xlabel='h1', ylabel='h2')
 plt.tight_layout()
 
 
@@ -195,9 +195,9 @@ def grad_profile(act, depth=12, width=64):
     return [l.weight.grad.norm().item() for l in layers]
 
 fig, ax = plt.subplots()
-ax.plot(range(1, 13), grad_profile(torch.sigmoid), 'o-', c=ASH, label='sigmoid')
-ax.plot(range(1, 13), grad_profile(torch.relu), 'o-', c=MAG, label='ReLU')
-ax.set(yscale='log', xlabel='layer (1 = closest to input)', ylabel='‖∂L/∂W‖', title='GRADIENT REACHING EACH LAYER'); ax.legend();
+ax.plot(range(1, 13), grad_profile(torch.sigmoid), 'o-', label='sigmoid')
+ax.plot(range(1, 13), grad_profile(torch.relu), 'o-', label='ReLU')
+ax.set(yscale='log', xlabel='layer (1 = closest to input)', ylabel='‖∂L/∂W‖', title='Gradient reaching each layer'); ax.legend();
 
 
 
@@ -280,18 +280,18 @@ lin = SVC(kernel='linear', C=1e3).fit(Xb, yb)
 w, b = lin.coef_[0], lin.intercept_[0]
 xs = np.linspace(-4, 4, 2)
 fig, (a1, a2) = plt.subplots(1, 2, figsize=(10, 3.8))
-a1.scatter(*Xb.T, c=[MAG if t else GRAPHITE for t in yb], s=22)
+a1.scatter(*Xb.T, c=['C1' if t else 'C0' for t in yb], s=22)
 for off, st in ((0, '-'), (1, '--'), (-1, '--')):
-    a1.plot(xs, -(w[0] * xs + b - off) / w[1], st, c=BONE, lw=1.2 if off else 2)
-a1.scatter(*lin.support_vectors_.T, s=140, facecolors='none', edgecolors=MAG_HOT, lw=1.5)
-a1.set(xlim=(-4, 4), ylim=(-4, 4), aspect='equal', title=f'MARGIN 2/‖w‖ = {2 / np.linalg.norm(w):.2f} · {len(lin.support_vectors_)} SUPPORT VECTORS')
+    a1.plot(xs, -(w[0] * xs + b - off) / w[1], st, c='k', lw=1.2 if off else 2)
+a1.scatter(*lin.support_vectors_.T, s=140, facecolors='none', edgecolors='k', lw=1.5)
+a1.set(xlim=(-4, 4), ylim=(-4, 4), aspect='equal', title=f'Margin 2/‖w‖ = {2 / np.linalg.norm(w):.2f}, {len(lin.support_vectors_)} support vectors')
 
 Xc, yc = make_circles(200, factor=0.4, noise=0.08, random_state=0)
 rbf = SVC(kernel='rbf', C=10).fit(Xc, yc)
 gx, gy = np.meshgrid(np.linspace(-1.4, 1.4, 200), np.linspace(-1.4, 1.4, 200))
-a2.contourf(gx, gy, rbf.decision_function(np.c_[gx.ravel(), gy.ravel()]).reshape(gx.shape) > 0, levels=1, colors=[INK2, MAG_DARK])
-a2.scatter(*Xc.T, c=[MAG if t else GRAPHITE for t in yc], s=12)
-a2.set(aspect='equal', title=f'RBF KERNEL · TRAIN ACC {rbf.score(Xc, yc):.0%}');
+a2.contourf(gx, gy, rbf.decision_function(np.c_[gx.ravel(), gy.ravel()]).reshape(gx.shape) > 0, levels=1, colors=['C0', 'C1'], alpha=0.15)
+a2.scatter(*Xc.T, c=['C1' if t else 'C0' for t in yc], s=12)
+a2.set(aspect='equal', title=f'RBF kernel, train accuracy {rbf.score(Xc, yc):.0%}');
 
 
 
@@ -304,12 +304,10 @@ a2.set(aspect='equal', title=f'RBF KERNEL · TRAIN ACC {rbf.score(Xc, yc):.0%}')
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401
 z = (Xc ** 2).sum(1)
 ax = plt.figure(figsize=(5, 4)).add_subplot(projection='3d')
-ax.scatter(Xc[:, 0], Xc[:, 1], z, c=[MAG if t else GRAPHITE for t in yc], s=10)
+ax.scatter(Xc[:, 0], Xc[:, 1], z, c=['C1' if t else 'C0' for t in yc], s=10)
 pp = np.linspace(-1.2, 1.2, 2); P1, P2 = np.meshgrid(pp, pp)
-ax.plot_surface(P1, P2, np.full_like(P1, 0.5), color=BONE, alpha=0.15)
-ax.set_facecolor(INK); ax.set_title('φ(x) = (x₁, x₂, x₁² + x₂²)')
-for axis in (ax.xaxis, ax.yaxis, ax.zaxis):
-    axis.set_pane_color((0, 0, 0, 0)); axis._axinfo['grid']['color'] = LINE
+ax.plot_surface(P1, P2, np.full_like(P1, 0.5), color='gray', alpha=0.2)
+ax.set_title('φ(x) = (x₁, x₂, x₁² + x₂²)')
 
 
 
@@ -423,8 +421,8 @@ def filter_grid(Wt, cols=8):
     return g
 
 fig, (a1, a2) = plt.subplots(1, 2, figsize=(11, 5.6))
-a1.imshow(filter_grid(snapshots[0]), interpolation='nearest'); a1.set_title('CONV1 · INIT'); a1.axis('off')
-a2.imshow(filter_grid(snapshots[-1]), interpolation='nearest'); a2.set_title(f'CONV1 · AFTER {epochs} EPOCHS'); a2.axis('off');
+a1.imshow(filter_grid(snapshots[0]), interpolation='nearest'); a1.set_title('conv1 at initialization'); a1.axis('off')
+a2.imshow(filter_grid(snapshots[-1]), interpolation='nearest'); a2.set_title(f'conv1 after {epochs} epochs'); a2.axis('off');
 
 
 
@@ -481,13 +479,13 @@ for residual in (False, True):
     print(f"{'residual' if residual else 'plain   '}  final loss {losses[-1]:.3f}  acc {(m(Xs).argmax(1) == ys).float().mean():.1%}")
 
 fig, (a1, a2) = plt.subplots(1, 2, figsize=(10, 3.6))
-a1.plot(curves['plain'][0], c=ASH, label='plain, 30 layers'); a1.plot(curves['residual'][0], c=MAG, label='residual, 30 layers')
-a1.set(title='TRAINING LOSS', xlabel='step'); a1.legend()
+a1.plot(curves['plain'][0], label='plain, 30 layers'); a1.plot(curves['residual'][0], label='residual, 30 layers')
+a1.set(title='Training loss', xlabel='step'); a1.legend()
 gx, gy = np.meshgrid(np.linspace(-1, 1, 200), np.linspace(-1, 1, 200))
 with torch.no_grad():
     zz = curves['residual'][1](torch.tensor(np.c_[gx.ravel(), gy.ravel()], dtype=torch.float32)).argmax(1).reshape(gx.shape)
-a2.contourf(gx, gy, zz, levels=1, colors=[INK2, MAG_DARK]); a2.scatter(*Xs.T, c=[MAG if t else ASH for t in ys], s=3)
-a2.set(aspect='equal', title='RESIDUAL NET · DECISION REGIONS');
+a2.contourf(gx, gy, zz, levels=1, colors=['C0', 'C1'], alpha=0.15); a2.scatter(*Xs.T, c=['C1' if t else 'C0' for t in ys], s=3)
+a2.set(aspect='equal', title='Residual net: decision regions');
 
 
 

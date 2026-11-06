@@ -131,9 +131,9 @@ def bptt_profile(rho, T=64, d=32):
     return [x.grad.norm().item() for x in hs]
 
 fig, ax = plt.subplots()
-for rho, c in ((0.8, ASH), (1.0, BONE), (1.2, MAG)):
+for rho, c in ((0.8, 'C0'), (1.0, 'C1'), (1.2, 'C2')):
     ax.plot(range(64, 0, -1), bptt_profile(rho), c=c, label=f'ρ = {rho}')
-ax.set(yscale='log', xlabel='steps back from the loss', ylabel='‖∂L/∂h_t‖', title='BACKPROP THROUGH TIME'); ax.legend();
+ax.set(yscale='log', xlabel='steps back from the loss', ylabel='‖∂L/∂h_t‖', title='Backprop through time'); ax.legend();
 
 
 
@@ -206,10 +206,10 @@ def lstm_gates(model, s):
 s = 'ROMEO:\nBut soft, what light through yonder window breaks?'
 g = lstm_gates(lstm, s)
 fig, axes = plt.subplots(3, 1, figsize=(11, 4.5), sharex=True)
-for ax, k, name in zip(axes, 'fio', ('FORGET', 'INPUT', 'OUTPUT')):
-    ax.imshow(g[k][:24], aspect='auto', vmin=0, vmax=1, cmap='baseline'); ax.set_ylabel(name, fontsize=8); ax.set_yticks([]); ax.grid(False)
+for ax, k, name in zip(axes, 'fio', ('forget', 'input', 'output')):
+    ax.imshow(g[k][:24], aspect='auto', vmin=0, vmax=1); ax.set_ylabel(name, fontsize=8); ax.set_yticks([]); ax.grid(False)
 axes[-1].set_xticks(range(len(s))); axes[-1].set_xticklabels([c if c != '\n' else '⏎' for c in s], fontsize=7)
-fig.suptitle('LSTM GATES · 24 UNITS × 1 LINE', x=0.01, ha='left', color=BONE, fontweight='bold');
+fig.suptitle('LSTM gates: 24 units × 1 line', x=0.01, ha='left');
 
 
 
@@ -297,9 +297,9 @@ for n in lengths:
         acc[att].append((pred.cpu() == tgt[:, :n]).all(1).float().mean().item())
 
 fig, ax = plt.subplots()
-ax.plot(lengths, acc[False], 'o-', c=ASH, label='seq2seq (bottleneck)')
-ax.plot(lengths, acc[True], 'o-', c=MAG, label='seq2seq + attention')
-ax.set(xlabel='sequence length', ylabel='exact-match accuracy', title='REVERSE A DIGIT STRING', ylim=(-0.03, 1.03)); ax.legend();
+ax.plot(lengths, acc[False], 'o-', label='seq2seq (bottleneck)')
+ax.plot(lengths, acc[True], 'o-', label='seq2seq + attention')
+ax.set(xlabel='sequence length', ylabel='exact-match accuracy', title='Reverse a digit string', ylim=(-0.03, 1.03)); ax.legend();
 
 
 
@@ -312,8 +312,8 @@ ax.set(xlabel='sequence length', ylabel='exact-match accuracy', title='REVERSE A
 digits = torch.tensor([[3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8] + [11] * (MAXLEN - 12)], device=DEVICE)
 pred, alpha = decode(models[True], digits, 12)
 fig, ax = plt.subplots(figsize=(4.4, 4.4))
-ax.imshow(alpha[0, :12, :12].cpu(), cmap='baseline'); ax.grid(False)
-ax.set(xticks=range(12), yticks=range(12), xlabel='input position', ylabel='output step', title='ATTENTION α · REVERSAL')
+ax.imshow(alpha[0, :12, :12].cpu()); ax.grid(False)
+ax.set(xticks=range(12), yticks=range(12), xlabel='input position', ylabel='output step', title='Attention α: reversal')
 ax.set_xticklabels(digits[0, :12].tolist()); ax.set_yticklabels(pred[0].tolist());
 
 
@@ -405,11 +405,11 @@ for T in (0.3, 1.5):
 names = list(SCORES); vals = [SCORES[k] for k in names]
 best = min(vals)
 fig, ax = plt.subplots(figsize=(8, 3.4))
-ax.barh(names, vals, color=[MAG if v == best else GRAPHITE for v in vals])
+ax.barh(names, vals, color=['C1' if v == best else 'C0' for v in vals])
 for i, v in enumerate(vals):
-    ax.text(v + 0.02, i, f'{v:.3f}', va='center', fontsize=8, color=BONE)
-ax.invert_yaxis(); ax.set(xlabel='validation loss (nats/char) · lower is better', title='THE BOARD · TINY SHAKESPEARE')
-ax.axvline(math.log(data.vocab), c=ASH, ls=':', lw=1);
+    ax.text(v + 0.02, i, f'{v:.3f}', va='center', fontsize=8)
+ax.invert_yaxis(); ax.set(xlabel='validation loss (nats/char) · lower is better', title='The board: Tiny Shakespeare')
+ax.axvline(math.log(data.vocab), c='gray', ls=':', lw=1);
 
 
 
@@ -434,7 +434,7 @@ s = 'To be, or not to be, that is the question:'
 w = attn_maps(gpt, s, layer=len(gpt.blocks) - 1)
 fig, axes = plt.subplots(1, w.shape[0], figsize=(3 * w.shape[0], 3.2))
 for h_, ax in enumerate(np.atleast_1d(axes)):
-    ax.imshow(w[h_] ** 0.5, cmap='baseline'); ax.set_title(f'HEAD {h_}'); ax.axis('off')
+    ax.imshow(w[h_] ** 0.5); ax.set_title(f'Head {h_}'); ax.axis('off')
 
 
 
@@ -454,8 +454,8 @@ still(113.5)
 # %%
 n = 8
 fig, axes = plt.subplots(1, 2, figsize=(7, 3.4))
-for ax, (title, m) in zip(axes, [('BERT · BIDIRECTIONAL', np.ones((n, n))), ('GPT · CAUSAL', np.tril(np.ones((n, n))))]):
-    ax.imshow(m, cmap='baseline', vmin=0, vmax=1.4); ax.set_title(title); ax.set(xlabel='attends to', ylabel='token'); ax.grid(False)
+for ax, (title, m) in zip(axes, [('BERT: bidirectional', np.ones((n, n))), ('GPT: causal', np.tril(np.ones((n, n))))]):
+    ax.imshow(m, vmin=0, vmax=1.4); ax.set_title(title); ax.set(xlabel='attends to', ylabel='token'); ax.grid(False)
 
 
 
@@ -530,10 +530,10 @@ ln = (x - x.mean()) / x.std(unbiased=False); rms = x / x.pow(2).mean().sqrt()
 z = torch.linspace(-4, 3, 200)
 fig, (a1, a2) = plt.subplots(1, 2, figsize=(10, 3.2))
 i = np.arange(8)
-a1.bar(i - 0.27, x, 0.27, color=GRAPHITE, label='input'); a1.bar(i, ln, 0.27, color=ASH, label='LayerNorm'); a1.bar(i + 0.27, rms, 0.27, color=MAG, label='RMSNorm')
-a1.set_title('NORMALIZE 8 ACTIVATIONS'); a1.legend(fontsize=8)
-a2.plot(z, torch.relu(z), c=ASH, label='ReLU'); a2.plot(z, z * torch.sigmoid(z), c=MAG, label='Swish (SwiGLU\'s gate)')
-a2.set_title('ACTIVATIONS'); a2.legend(fontsize=8);
+a1.bar(i - 0.27, x, 0.27, label='input'); a1.bar(i, ln, 0.27, label='LayerNorm'); a1.bar(i + 0.27, rms, 0.27, label='RMSNorm')
+a1.set_title('Normalize 8 activations'); a1.legend(fontsize=8)
+a2.plot(z, torch.relu(z), label='ReLU'); a2.plot(z, z * torch.sigmoid(z), label='Swish (SwiGLU\'s gate)')
+a2.set_title('Activations'); a2.legend(fontsize=8);
 
 
 

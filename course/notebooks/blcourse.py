@@ -36,16 +36,13 @@ logging.getLogger('torch.distributed.elastic.multiprocessing.redirects').setLeve
 
 HERE = Path(__file__).resolve().parent
 COURSE = HERE.parent
-REPO = COURSE.parent
 STILLS = COURSE / 'site' / 'stills'
-FONTS = REPO / 'app' / 'public' / 'fonts'
 CACHE = Path(os.environ.get('BASELINE_CACHE', COURSE / '.cache'))
 CACHE.mkdir(parents=True, exist_ok=True)
 
-# ── the film's palette (docs/DESIGN.md §2). Magenta is reserved for "the current state of the art". ──
-INK, INK2, PANEL, LINE = '#0B0A0D', '#121016', '#17151C', '#2A2731'
-GRAPHITE, ASH, BONE = '#5C5966', '#9A96A3', '#EDEAF2'
-MAG, MAG_HOT, MAG_DEEP, MAG_DARK = '#FF2E7E', '#FF9CC4', '#A3104A', '#3A0A1E'
+# Two of the film's colors (docs/DESIGN.md §2), used only in the captions under its stills.
+# Plots stay plain matplotlib, so they are never mistaken for frames of the film.
+ASH, MAG = '#9A96A3', '#FF2E7E'
 
 
 # ── hardware ────────────────────────────────────────────────────────────────────────────────────────
@@ -161,32 +158,10 @@ def sync() -> None:
 
 # ── style ──────────────────────────────────────────────────────────────────────────────────────────
 def use_style() -> None:
-    """Matplotlib in the film's look: ink background, bone lines, magenta only where we point at something."""
+    """Plain matplotlib, so plots read as ordinary notebook output, distinct from the film's stills.
+    Only the default size changes: a wide, short figure suits the side-by-side panels the labs draw."""
     import matplotlib as mpl
-    from matplotlib import font_manager
-
-    for f in ['IBMPlexMono-Regular.ttf', 'IBMPlexMono-Medium.ttf', 'IBMPlexMono-Bold.ttf']:
-        p = FONTS / 'src' / f
-        if p.exists():
-            font_manager.fontManager.addfont(str(p))
-    mpl.rcParams.update({
-        'figure.facecolor': INK, 'axes.facecolor': INK, 'savefig.facecolor': INK,
-        'axes.edgecolor': LINE, 'axes.labelcolor': ASH, 'axes.titlecolor': BONE,
-        'axes.grid': True, 'grid.color': LINE, 'grid.linewidth': 0.6,
-        'axes.spines.top': False, 'axes.spines.right': False,
-        'xtick.color': ASH, 'ytick.color': ASH, 'text.color': BONE,
-        'font.family': ['IBM Plex Mono', 'DejaVu Sans Mono'], 'font.size': 10,
-        'axes.titleweight': 'bold', 'axes.titlesize': 11, 'axes.titlelocation': 'left',
-        'legend.frameon': False, 'legend.labelcolor': BONE,
-        'axes.prop_cycle': mpl.cycler(color=[BONE, ASH, GRAPHITE, MAG_HOT, MAG_DEEP]),
-        'image.cmap': 'baseline', 'figure.figsize': (7, 3.6), 'figure.dpi': 110,
-        'lines.linewidth': 1.6, 'scatter.edgecolors': 'none',
-    })
-    from matplotlib.colors import LinearSegmentedColormap
-    for name, stops in {'baseline': [INK, MAG_DARK, MAG_DEEP, MAG, MAG_HOT, BONE],
-                        'bone': [INK, GRAPHITE, ASH, BONE]}.items():
-        if name not in mpl.colormaps:
-            mpl.colormaps.register(LinearSegmentedColormap.from_list(name, stops))
+    mpl.rcParams.update({'figure.figsize': (7, 3.6), 'figure.dpi': 110})
 
 
 # ── stills from the film ───────────────────────────────────────────────────────────────────────────
@@ -521,6 +496,5 @@ __all__ = [
     'TIER', 'TIERS', 'CFG', 'DEVICE', 'CACHE', 'hardware_report', 'seed', 'timer', 'sync', 'use_style', 'still', 'fetch',
     'shakespeare', 'cifar10', 'CIFAR10_CLASSES', 'CharData', 'TinyGPT', 'n_params', 'eval_loss', 'train_lm', 'load_llm', 'chat',
     'LoRALinear', 'add_lora', 'lora_disabled', 'reset_lora', 'chat_ids', 'answer_logprob', 'check',
-    'INK', 'INK2', 'PANEL', 'LINE', 'GRAPHITE', 'ASH', 'BONE', 'MAG', 'MAG_HOT', 'MAG_DEEP', 'MAG_DARK',
     'np', 'torch', 'nn', 'F', 'math', 'time',
 ]
