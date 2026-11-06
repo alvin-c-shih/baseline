@@ -19,6 +19,8 @@ hardware_report()
 
 
 # %% [markdown]
+# ---
+#
 # ## 1.1 The perceptron draws a line (1958)
 
 
@@ -90,6 +92,8 @@ check('perceptron_step', perceptron_step)
 
 
 # %% [markdown]
+# ---
+#
 # ## 1.2 Stack another hidden layer, and backpropagate
 # Put a layer of two units between input and output. Each hidden unit draws its own line. The output unit then combines those two lines, and a combination of lines can carve out shapes that one line can't.
 #
@@ -160,6 +164,8 @@ check('xor_weights', xor_weights)
 
 
 # %% [markdown]
+# ---
+#
 # ## 1.3 Sigmoid squashed the signal; ReLU clipped the negatives
 
 
@@ -217,6 +223,8 @@ still(19.5)
 
 
 # %% [markdown]
+# ---
+#
 # ## 1.4 Every feature carved by hand (1999–2005)
 # Before 2012, computer vision meant **feature engineering**. Experts designed descriptors like SIFT (1999) and HOG (2005), histograms of edge directions in small cells, and fed them to a classifier such as an SVM. Then convolutional networks learned their own features from the pixels and beat them.
 #
@@ -267,6 +275,8 @@ def hog(imgs_u8):
 
 
 # %% [markdown]
+# ---
+#
 # ## 1.5 SVM: the widest margin, and the kernel trick
 # Among all lines that separate two classes, the **support vector machine** (Cortes & Vapnik, 1995) picks the one with the widest empty street on both sides. The points on the curbs are the **support vectors**. Only those points determine the line.
 
@@ -336,6 +346,8 @@ print(f'HOG + SVM test accuracy: {acc_hog:.1%}   (chance: 10%)')
 
 
 # %% [markdown]
+# ---
+#
 # ## 1.6 Learned filters nobody planned (2012)
 # Now the 2012 recipe: let a convolutional network learn its own features from the pixels.
 #
@@ -442,6 +454,8 @@ still(36.03)
 
 
 # %% [markdown]
+# ---
+#
 # ## 1.7 Depth is all you need: residual connections (2015)
 # If more layers mean richer re-representations, why not use 50 or 150? Because naive deep stacks are hard to optimize: the signal and gradient degrade layer by layer. **ResNet** (He et al., 2015) gave each block a shortcut, *output = x + f(x)*. A block only has to learn a *correction* to its input, and the gradient always has a clean path back through the `+`.
 #
@@ -495,6 +509,8 @@ still(44.5)
 
 
 # %% [markdown]
+# ---
+#
 # ## 1.8 Frozen on the shelf
 # By 2013 the kernel tricks and hand-made features were "frozen on the shelf": the network learned its own features. That pattern, a human-designed component replaced by a learned one, repeats through the rest of the song.
 
@@ -506,6 +522,8 @@ still(55.26)
 
 
 # %% [markdown]
+# ---
+#
 # ### Checkpoint
 # 1. Why can't a single perceptron learn XOR, and what does a hidden layer change?
 # 2. What is backprop, in one sentence?

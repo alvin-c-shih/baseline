@@ -22,6 +22,8 @@ hardware_report()
 
 
 # %% [markdown]
+# ---
+#
 # ## 2.1 Tokens: turning text into integers
 # Models consume numbers, so text is first split into **tokens**, each mapped to an integer ID. Our own models will use the simplest tokenizer, one token per character. Production LLMs use **byte-pair encoding (BPE)**, which merges frequent character runs into sub-word tokens. Here's how a real LLM tokenizer sees the chorus line (the first run downloads a few MB):
 
@@ -55,6 +57,8 @@ SCORES = {}      # model name -> validation loss; we fill this in as we go
 
 
 # %% [markdown]
+# ---
+#
 # ## 2.2 N-gram counting: a window three tokens wide
 
 
@@ -101,6 +105,8 @@ for n in range(1, 7):
 
 
 # %% [markdown]
+# ---
+#
 # ## 2.3 RNN: carry a hidden state, and backprop through time
 
 
@@ -148,6 +154,8 @@ still(70.5)
 
 
 # %% [markdown]
+# ---
+#
 # ## 2.4 LSTM: put gates along the road (1997)
 # The LSTM keeps a separate **cell state** c that runs alongside the sequence like a highway, and three learned **gates** (values between 0 and 1) decide what happens to it at each step:
 #
@@ -219,6 +227,8 @@ still(74.05)
 
 
 # %% [markdown]
+# ---
+#
 # ## 2.5 Seq2seq squeezes a sentence through a bottleneck; attention looks back
 # Translation maps one sequence to another of a different length. **Seq2seq** (Sutskever et al., 2014) uses two RNNs. An *encoder* reads the whole input into one fixed-size vector, and a *decoder* generates the output from that vector alone. That vector is the **bottleneck**: a 5-word sentence and a 50-word sentence must fit in the same space.
 #
@@ -339,6 +349,8 @@ check('attention_row', attention_row)
 
 
 # %% [markdown]
+# ---
+#
 # ## 2.6 The Transformer: attention is all you need (2017)
 # If attention does the important work, do we need the recurrence at all? The **Transformer** (Vaswani et al., 2017) drops it. Each layer is **self-attention**, where every position attends to every other position in the same sequence, followed by a small per-position MLP. There's no sequential dependency between positions, so a GPU computes all of them **in parallel**. That parallelism is why it scaled when RNNs couldn't.
 #
@@ -444,6 +456,8 @@ still(113.5)
 
 
 # %% [markdown]
+# ---
+#
 # ## 2.7 BERT read both ways; decoder-only scaled up
 # **BERT** (2018) is a Transformer *encoder*. Every token attends to every other token, left and right, and it's trained by hiding 15% of the tokens behind `[MASK]` and predicting them. That made it excellent at *understanding* tasks (classification, search, extraction), but it can't generate text left to right.
 #
@@ -489,6 +503,8 @@ still(168.2)
 
 
 # %% [markdown]
+# ---
+#
 # ## 2.8 The parts list of a modern LLM
 # The Transformer you just built is the 2017 design. A few lines of Verse 3 each swap one of its parts, and today's LLMs (including the one you'll run in Module 4) use all of the swaps. Here is each one in a few lines of code.
 
@@ -557,6 +573,8 @@ for k in ['model_type', 'num_hidden_layers', 'hidden_size', 'num_attention_heads
 
 
 # %% [markdown]
+# ---
+#
 # ### Checkpoint
 # 1. Why does an n-gram model stop improving as n grows?
 # 2. What goes wrong when you backprop through 64 steps of an RNN, and how do LSTM gates help?

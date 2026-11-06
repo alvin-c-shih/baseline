@@ -17,6 +17,8 @@ hardware_report()
 
 
 # %% [markdown]
+# ---
+#
 # ## 5.1 Scale is all you need: a scaling law on your laptop
 # Kaplan et al. (2020) trained hundreds of language models and found that loss falls as a smooth **power law** in model size N, data D and compute C, over seven orders of magnitude:
 #
@@ -112,6 +114,8 @@ still(211.64)
 
 
 # %% [markdown]
+# ---
+#
 # ## 5.2 And you, attention: quadratic in the length
 # Self-attention compares every token with every other token: n² scores per head per layer. Double the context and the attention cost goes up 4×. FlashAttention (next section) fixes the *memory* traffic, not the *arithmetic*.
 #
@@ -148,6 +152,8 @@ still(215.8)
 
 
 # %% [markdown]
+# ---
+#
 # ## 5.3 FlashAttention tiles it all inside the SRAM
 # Standard attention computes the full n × n score matrix S = QKᵀ, writes it to GPU main memory (HBM), reads it back for the softmax, writes the result, and reads it again to multiply by V. For n = 32K that's 1 billion entries per head. The arithmetic is cheap. The **memory traffic** is the bottleneck.
 #
@@ -280,6 +286,8 @@ still(183.0)
 
 
 # %% [markdown]
+# ---
+#
 # ## 5.4 Context window: 2K, then a million tokens long
 # GPT-3 read 2,048 tokens at a time. Gemini 1.5 (2024) read a million. Longer context needed cheaper attention (above), better position encodings (RoPE with scaled frequencies), and long-document training data. But does a model actually *use* a long context?
 #
@@ -332,6 +340,8 @@ still(191.68)
 
 
 # %% [markdown]
+# ---
+#
 # ## 5.5 A linear-time successor, training up its strength
 # Recurrent models had a fixed-size state and O(n) cost. Their problems were sequential training and forgetting. A family of newer models brings the recurrence back in a form that trains in parallel: **linear attention**, **state-space models** (S4, Mamba), **RWKV**, and gated variants. The simplest is linear attention (Katharopoulos et al., 2020). Drop the softmax, use a positive feature map φ, and associativity lets you carry a d × d running state instead of all past keys:
 #
@@ -395,6 +405,8 @@ still(220.45)
 
 
 # %% [markdown]
+# ---
+#
 # ## 5.6 Every "all you need" becomes a footnote
 # The song's four claims, each a paper with a date:
 #
@@ -439,6 +451,8 @@ still(236.33)
 
 
 # %% [markdown]
+# ---
+#
 # ### Checkpoint
 # 1. Chinchilla says about 20 tokens per parameter. Why are widely deployed models usually trained on far more?
 # 2. Where does attention's cost grow as n², and where does memory grow as n during generation?

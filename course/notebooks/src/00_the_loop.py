@@ -37,6 +37,11 @@ CFG
 
 
 
+# %% [markdown]
+# ---
+
+
+
 # %%
 still(52.8)
 
@@ -109,6 +114,8 @@ fig.suptitle("The 650 blanks, filled in: each digit's pixel weights (red = votes
 
 
 # %% [markdown]
+# ---
+#
 # ## 0.1 A model is a function with knobs
 # Here is the smallest useful model: a line, ŷ = w·x + b, with two **parameters** w and b. The data is noisy points from a line we pretend not to know.
 
@@ -126,6 +133,8 @@ ax.set(title='Data: 60 points', xlabel='x', ylabel='y');
 
 
 # %% [markdown]
+# ---
+#
 # ## 0.2 The loss is a test suite that returns a number
 # A unit test passes or fails. A **loss** tells you *how badly* the model fails, as one smooth number. Mean squared error is the classic choice:
 #
@@ -174,6 +183,8 @@ a2.set(title='The line, learning'); a2.legend();
 
 
 # %% [markdown]
+# ---
+#
 # ## 0.3 Autograd: never derive a gradient by hand again
 # Deriving `dw` by hand works for two parameters. GPT-3 has 175 billion. PyTorch records every operation you do on a tensor marked `requires_grad=True`, then `loss.backward()` walks that record backwards with the chain rule (**backpropagation**, Module 1) and fills in `.grad`.
 
@@ -214,6 +225,8 @@ check('numeric_grad', numeric_grad)
 
 
 # %% [markdown]
+# ---
+#
 # ## 0.4 From numbers to classes: scores, softmax, cross-entropy
 # The line predicted a *number*. Most of this course predicts a *class*: which digit, which word comes next. The recipe is the same everywhere:
 #
@@ -283,6 +296,8 @@ print(f'train loss {loss.item():.3f} · test accuracy {acc:.1%}')
 
 
 # %% [markdown]
+# ---
+#
 # ## 0.5 The loop at scale: mini-batches, epochs, optimizers
 # The loop above computed the loss on **all** 1,257 training images before every step. Real datasets have millions of examples, so every lab from Module 1 on uses the same handful of additions. Here they are, one at a time:
 #
@@ -340,6 +355,8 @@ ax.set(xlabel='epoch', ylabel='test loss', title='Same data, same epochs, differ
 
 
 # %% [markdown]
+# ---
+#
 # ## 0.6 Vectors, matrices and shapes
 # Three facts carry most of the math in this course:
 #
@@ -387,6 +404,8 @@ check('shapes', my_shapes)
 
 
 # %% [markdown]
+# ---
+#
 # ## 0.7 Train, validation, test: don't grade your own homework
 # A model can do perfectly on its training examples and still be useless, just as code can pass every test it was tuned against and still fail in production. So we split the data:
 #
@@ -428,6 +447,8 @@ a2.set(ylim=(-2, 2), title='Two fits'); a2.legend(fontsize=8);
 
 
 # %% [markdown]
+# ---
+#
 # ## 0.8 Benchmarks and leaderboards
 # The chorus is about **benchmarks**: a fixed public test set and a metric that everyone reports. ImageNet top-5 error, WMT14 BLEU, LAMBADA accuracy. Benchmarks are what let a field say "state of the art". They also have the weakness the song is about. A benchmark rewards whatever wins on it, and when everyone tunes against the same test set, it slowly turns into a validation set.
 
@@ -439,6 +460,8 @@ still(47.53)
 
 
 # %% [markdown]
+# ---
+#
 # ### Checkpoint
 # 1. What are a parameter, a loss, and a gradient?
 # 2. Write the five-line training loop from memory.

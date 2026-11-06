@@ -19,6 +19,8 @@ hardware_report()
 
 
 # %% [markdown]
+# ---
+#
 # ## 3.1 GANs played a two-player game
 # A **generative** model learns to produce new samples that look like the training data. Our "data" is 25 Gaussian blobs on a grid, the same 25 targets as the film's GAN court. Each blob is a **mode**, and a good generator should produce all 25.
 #
@@ -74,6 +76,8 @@ still(122.9)
 
 
 # %% [markdown]
+# ---
+#
 # ## 3.2 Diffusion learned to denoise in a thousand tiny steps
 # **Diffusion models** (Sohl-Dickstein 2015; DDPM, Ho et al. 2020) have no adversary. Take a real sample and add a little Gaussian noise, 1,000 times, until it's pure noise. Then train one network on one boring regression task: *given a noisy sample and the step number t, predict the noise that was added*.
 #
@@ -173,6 +177,8 @@ print(f'DDPM: modes {modes_covered(frames[0])[0]}/25   vs   GAN: {gan_log[-1][2]
 
 
 # %% [markdown]
+# ---
+#
 # ### Checkpoint
 # 1. In a GAN, what does the discriminator learn, and what does the generator learn?
 # 2. What is mode collapse, and why doesn't diffusion suffer from it?
