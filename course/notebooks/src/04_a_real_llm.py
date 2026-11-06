@@ -17,15 +17,19 @@ hardware_report()
 
 
 # %% [markdown]
-# ---
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 #
 # ## 4.1 Meet a real LLM
-# Time to load `CFG['llm']`. A causal language model is the Module 2 TinyGPT with more of everything: tokens in, one score (logit) per vocabulary entry out, turned into probabilities by the softmax from §0.4. Its vocabulary has about 150,000 tokens instead of 65 characters. Here is its next-token distribution at the end of the chorus line.
 
 
 
 # %%
 still(161.07)
+
+
+
+# %% [markdown]
+# Time to load `CFG['llm']`. A causal language model is the Module 2 TinyGPT with more of everything: tokens in, one score (logit) per vocabulary entry out, turned into probabilities by the softmax from §0.4. Its vocabulary has about 150,000 tokens instead of 65 characters. Here is its next-token distribution at the end of the chorus line.
 
 
 
@@ -44,17 +48,21 @@ ax.set(title=f'P(next token | "…just a")', xlabel='probability');
 
 
 # %% [markdown]
-# ---
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 #
 # ## 4.2 Dense became a mixture: only some experts awake
-# A dense layer uses every weight for every token. A **mixture of experts** (Shazeer et al., 2017) replaces the MLP with E smaller expert MLPs plus a **router** that sends each token to its top-k experts. You get E× the parameters at about k/E of the compute per token.
-#
-# Toy version: 8 input clusters, each needing a different function. Can a router with 8 experts and top-2 routing learn to divide the work?
 
 
 
 # %%
 still(136.62)
+
+
+
+# %% [markdown]
+# A dense layer uses every weight for every token. A **mixture of experts** (Shazeer et al., 2017) replaces the MLP with E smaller expert MLPs plus a **router** that sends each token to its top-k experts. You get E× the parameters at about k/E of the compute per token.
+#
+# Toy version: 8 input clusters, each needing a different function. Can a router with 8 experts and top-2 routing learn to divide the work?
 
 
 
@@ -103,17 +111,21 @@ print(f'final MSE {F.mse_loss(moe(x)[0], y).item():.3f}; each token uses 2/8 exp
 
 
 # %% [markdown]
-# ---
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 #
 # ## 4.3 32 bits down to 4, for the throughput's sake
-# Each parameter is a 32-bit (or 16-bit) float. LLM inference is mostly limited by **memory bandwidth**: generating each token streams every weight from memory once. Store each weight in 4 bits and you move 8× less data, and the model fits on smaller machines.
-#
-# **Quantization** maps each row of a weight matrix onto 16 evenly spaced levels: q = round(w / scale), clipped to [−8, 7], with scale = max|w| / 7 per row. Below we quantize every linear layer of the real LLM and measure the damage as **perplexity** (e^loss, lower is better) on a passage it hasn't seen.
 
 
 
 # %%
 still(139.05)
+
+
+
+# %% [markdown]
+# Each parameter is a 32-bit (or 16-bit) float. LLM inference is mostly limited by **memory bandwidth**: generating each token streams every weight from memory once. Store each weight in 4 bits and you move 8× less data, and the model fits on smaller machines.
+#
+# **Quantization** maps each row of a weight matrix onto 16 evenly spaced levels: q = round(w / scale), clipped to [−8, 7], with scale = max|w| / 7 per row. Below we quantize every linear layer of the real LLM and measure the damage as **perplexity** (e^loss, lower is better) on a passage it hasn't seen.
 
 
 
@@ -182,17 +194,21 @@ for k, v in results.items():
 
 
 # %% [markdown]
-# ---
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 #
 # ## 4.4 Full fine-tune → LoRA: a low-rank little patch
-# **Fine-tuning** continues training a pretrained model on your own data. Updating all its weights means storing a full copy of the model per task, plus optimizer state 2–3× its size. **LoRA** (Hu et al., 2021) freezes W and learns a low-rank update ΔW = B·A, where A is r × d and B is d × r with r ≈ 8. Only B and A are trained. That's under 1% of the parameters, and the patch is a few MB.
-#
-# `add_lora` in `blcourse.py` wraps the attention's `q_proj` and `v_proj` layers. Task: teach the model the film's house style for "baseline cards", a format it has never seen.
 
 
 
 # %%
 still(144.56)
+
+
+
+# %% [markdown]
+# **Fine-tuning** continues training a pretrained model on your own data. Updating all its weights means storing a full copy of the model per task, plus optimizer state 2–3× its size. **LoRA** (Hu et al., 2021) freezes W and learns a low-rank update ΔW = B·A, where A is r × d and B is d × r with r ≈ 8. Only B and A are trained. That's under 1% of the parameters, and the patch is a few MB.
+#
+# `add_lora` in `blcourse.py` wraps the attention's `q_proj` and `v_proj` layers. Task: teach the model the film's house style for "baseline cards", a format it has never seen.
 
 
 
@@ -275,15 +291,19 @@ for name in HELD_OUT:
 
 
 # %% [markdown]
-# ---
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 #
 # ## 4.5 Then just prompt it in context: no gradient to catch
-# GPT-3 (2020) showed that a big enough model can pick up a task from a few examples placed in its prompt, with no training at all. This is **in-context learning**. Let's turn the LoRA patch off and try that instead. For a chat model, the examples go in as earlier turns of the conversation.
 
 
 
 # %%
 still(146.3)
+
+
+
+# %% [markdown]
+# GPT-3 (2020) showed that a big enough model can pick up a task from a few examples placed in its prompt, with no training at all. This is **in-context learning**. Let's turn the LoRA patch off and try that instead. For a chat model, the examples go in as earlier turns of the conversation.
 
 
 
@@ -306,9 +326,18 @@ still(147.8)
 
 
 # %% [markdown]
-# ---
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 #
 # ## 4.6 RLHF trained a reward model to rank
+
+
+
+# %%
+still(172.64)
+
+
+
+# %% [markdown]
 # A pretrained LLM continues text. That's not the same as being helpful. **RLHF** (Christiano 2017; InstructGPT 2022) adds three steps:
 #
 # 1. **SFT**: fine-tune on human-written example answers (what you did with LoRA in §4.4).
@@ -316,11 +345,6 @@ still(147.8)
 # 3. **RL (PPO)**: optimize the LLM to maximize the reward model's score, with a penalty for drifting too far from the SFT model.
 #
 # Step 2 rests on the **Bradley–Terry** model of comparisons: P(A ≻ B) = σ(r_A − r_B). Below, four answers have hidden "true" quality. We simulate 300 noisy human votes and recover the scores from the votes alone.
-
-
-
-# %%
-still(172.64)
 
 
 
@@ -344,9 +368,18 @@ print('ranking:', ' ≻ '.join('ABCD'[i] for i in fitted.argsort(descending=True
 
 
 # %% [markdown]
-# ---
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 #
 # ## 4.7 DPO skipped the middleman
+
+
+
+# %%
+still(177.13)
+
+
+
+# %% [markdown]
 # RLHF's step 3 is the fiddly one: an RL loop, a separate reward model held in memory, and a lot of tuning. **DPO** (Rafailov et al., 2023) shows that, for the KL-constrained objective RLHF optimizes, the best policy has a closed form. Substituting it back into the Bradley–Terry likelihood cancels the intractable normalizer Z(x), and leaves a plain supervised loss on preference pairs (y_w preferred over y_l):
 #
 # $$L_\text{DPO} = -\log\sigma\Big(\beta\big[\log\tfrac{\pi_\theta(y_w|x)}{\pi_\text{ref}(y_w|x)} - \log\tfrac{\pi_\theta(y_l|x)}{\pi_\text{ref}(y_l|x)}\big]\Big)$$
@@ -354,11 +387,6 @@ print('ranking:', ' ≻ '.join('ABCD'[i] for i in fitted.argsort(descending=True
 # No reward model and no RL loop. You need two forward passes per pair, through the model being trained (π_θ) and through a frozen copy (π_ref). With LoRA the frozen copy is free: it's the same model with the patch turned off (`lora_disabled`).
 #
 # Our preference: **short, direct answers.** For each question, the *chosen* answer is one sentence we wrote. The *rejected* answer is whatever the model itself says now. That's how real preference data works: you compare against the model's own outputs, so it learns to move away from what it actually does.
-
-
-
-# %%
-still(177.13)
 
 
 
@@ -453,7 +481,7 @@ still(174.8)
 
 
 # %% [markdown]
-# ---
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 #
 # ### Checkpoint
 # 1. What does an LLM output at each step, and how does that become text?

@@ -165,12 +165,14 @@ def use_style() -> None:
 
 
 # ── stills from the film ───────────────────────────────────────────────────────────────────────────
-def still(t: float, caption: str | None = None, width: int = 720):
+def still(t: float, caption: str | None = None, width: int = 540):
     """Show the film's frame at song time t (seconds), captioned from site/stills/captions.json: where you are in the video.
     The frame is a plain image output and the caption a separate HTML output, so both survive viewers that strip
-    inline images from HTML (GitHub's notebook view)."""
+    inline images from HTML (GitHub's notebook view). It is shown `width` px wide, smaller than a plot, and stored
+    at twice that so it stays sharp on high-density screens."""
     from IPython.display import HTML, Image, display
-    import json
+    from PIL import Image as PILImage
+    import io, json
     p = STILLS / f't{t:06.2f}.jpg'
     if not p.exists():
         print(f'(still {p.name} not found)')
@@ -178,7 +180,11 @@ def still(t: float, caption: str | None = None, width: int = 720):
     info = json.loads((STILLS / 'captions.json').read_text()).get(f'{t:.2f}', {})
     caption = caption or f"{info.get('scene', '')} · {info.get('c', '')}"
     m, s = divmod(t, 60)
-    display(Image(data=p.read_bytes(), format='jpeg', width=width))
+    im = PILImage.open(p)
+    if im.width > 2 * width:
+        im = im.resize((2 * width, round(im.height * 2 * width / im.width)), PILImage.LANCZOS)
+    buf = io.BytesIO(); im.save(buf, 'JPEG', quality=85)
+    display(Image(data=buf.getvalue(), format='jpeg', width=width))
     display(HTML(
         f'<p style="font:12px \'IBM Plex Mono\',monospace;color:{ASH};margin:2px 0 10px;max-width:{width}px">'
         f'<a href="https://youtu.be/Qy3_4oXoS6c?t={int(t)}" style="color:{MAG}">▶ {int(m)}:{s:05.2f}</a> · {caption}</p>'))

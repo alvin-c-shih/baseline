@@ -38,7 +38,7 @@ CFG
 
 
 # %% [markdown]
-# ---
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 
 
 
@@ -114,7 +114,7 @@ fig.suptitle("The 650 blanks, filled in: each digit's pixel weights (red = votes
 
 
 # %% [markdown]
-# ---
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 #
 # ## 0.1 A model is a function with knobs
 # Here is the smallest useful model: a line, ŷ = w·x + b, with two **parameters** w and b. The data is noisy points from a line we pretend not to know.
@@ -133,7 +133,7 @@ ax.set(title='Data: 60 points', xlabel='x', ylabel='y');
 
 
 # %% [markdown]
-# ---
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 #
 # ## 0.2 The loss is a test suite that returns a number
 # A unit test passes or fails. A **loss** tells you *how badly* the model fails, as one smooth number. Mean squared error is the classic choice:
@@ -183,7 +183,7 @@ a2.set(title='The line, learning'); a2.legend();
 
 
 # %% [markdown]
-# ---
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 #
 # ## 0.3 Autograd: never derive a gradient by hand again
 # Deriving `dw` by hand works for two parameters. GPT-3 has 175 billion. PyTorch records every operation you do on a tensor marked `requires_grad=True`, then `loss.backward()` walks that record backwards with the chain rule (**backpropagation**, Module 1) and fills in `.grad`.
@@ -225,9 +225,18 @@ check('numeric_grad', numeric_grad)
 
 
 # %% [markdown]
-# ---
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 #
 # ## 0.4 From numbers to classes: scores, softmax, cross-entropy
+
+
+
+# %%
+still(5.5)
+
+
+
+# %% [markdown]
 # The line predicted a *number*. Most of this course predicts a *class*: which digit, which word comes next. The recipe is the same everywhere:
 #
 # 1. The model outputs **one score per class**, called **logits**. For the 8 × 8 digits from §0.0, that's `nn.Linear(64, 10)`: 10 weighted sums of the 64 pixels, the template from §0.0.
@@ -235,11 +244,6 @@ check('numeric_grad', numeric_grad)
 # 3. The loss is **cross-entropy**: −log(the probability given to the correct class). If the model gave the right answer probability 1, the loss is −log 1 = 0. At 0.5 it's 0.69, and at 0.01 it's 4.6. The log turns "a bit less confident" into a smooth, steady penalty, and turns products of probabilities into sums, which is why you'll see logs everywhere.
 #
 # $$p_k = \frac{e^{z_k}}{\sum_j e^{z_j}} \qquad L = -\log p_{\text{correct}}$$
-
-
-
-# %%
-still(5.5)
 
 
 
@@ -296,9 +300,18 @@ print(f'train loss {loss.item():.3f} · test accuracy {acc:.1%}')
 
 
 # %% [markdown]
-# ---
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 #
 # ## 0.5 The loop at scale: mini-batches, epochs, optimizers
+
+
+
+# %%
+still(140.79)
+
+
+
+# %% [markdown]
 # The loop above computed the loss on **all** 1,257 training images before every step. Real datasets have millions of examples, so every lab from Module 1 on uses the same handful of additions. Here they are, one at a time:
 #
 # | Piece | What it is | Why |
@@ -314,11 +327,6 @@ print(f'train loss {loss.item():.3f} · test accuracy {acc:.1%}')
 # These settings (batch size, learning rate, epochs…) are **hyperparameters**: knobs *you* choose, as opposed to parameters, which training learns.
 #
 # > **Predict first.** Train the digit classifier for 15 epochs three ways: full batch with SGD, mini-batches of 32 with SGD, mini-batches of 32 with Adam. Which ends with the lowest test loss?
-
-
-
-# %%
-still(140.79)
 
 
 
@@ -355,19 +363,23 @@ ax.set(xlabel='epoch', ylabel='test loss', title='Same data, same epochs, differ
 
 
 # %% [markdown]
-# ---
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 #
 # ## 0.6 Vectors, matrices and shapes
-# Three facts carry most of the math in this course:
-#
-# - **A vector is a list of numbers, and a dot product is a match score.** Multiply two lists position by position and add: `a @ b`. It's large when they point the same way, near 0 when unrelated, negative when opposite. The perceptron, the digit template, a convolution and attention are all dot products.
-# - **A matrix multiply is many dot products at once.** `x @ W` with x: (32, 64) and W: (64, 10) dots each of 32 images with each of 10 templates and gives (32, 10). The inner sizes must match (64 and 64) and disappear.
-# - **Tensors have shapes, and the axes have conventions.** The first axis is almost always the batch. Images are (batch, channels, height, width). Text is (batch, time, features), often written (B, T, C). Attention scores are (batch, heads, T, T). When code breaks, print `.shape` first.
 
 
 
 # %%
 still(127.75)
+
+
+
+# %% [markdown]
+# Three facts carry most of the math in this course:
+#
+# - **A vector is a list of numbers, and a dot product is a match score.** Multiply two lists position by position and add: `a @ b`. It's large when they point the same way, near 0 when unrelated, negative when opposite. The perceptron, the digit template, a convolution and attention are all dot products.
+# - **A matrix multiply is many dot products at once.** `x @ W` with x: (32, 64) and W: (64, 10) dots each of 32 images with each of 10 templates and gives (32, 10). The inner sizes must match (64 and 64) and disappear.
+# - **Tensors have shapes, and the axes have conventions.** The first axis is almost always the batch. Images are (batch, channels, height, width). Text is (batch, time, features), often written (B, T, C). Attention scores are (batch, heads, T, T). When code breaks, print `.shape` first.
 
 
 
@@ -404,7 +416,7 @@ check('shapes', my_shapes)
 
 
 # %% [markdown]
-# ---
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 #
 # ## 0.7 Train, validation, test: don't grade your own homework
 # A model can do perfectly on its training examples and still be useless, just as code can pass every test it was tuned against and still fail in production. So we split the data:
@@ -447,10 +459,9 @@ a2.set(ylim=(-2, 2), title='Two fits'); a2.legend(fontsize=8);
 
 
 # %% [markdown]
-# ---
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 #
 # ## 0.8 Benchmarks and leaderboards
-# The chorus is about **benchmarks**: a fixed public test set and a metric that everyone reports. ImageNet top-5 error, WMT14 BLEU, LAMBADA accuracy. Benchmarks are what let a field say "state of the art". They also have the weakness the song is about. A benchmark rewards whatever wins on it, and when everyone tunes against the same test set, it slowly turns into a validation set.
 
 
 
@@ -460,7 +471,12 @@ still(47.53)
 
 
 # %% [markdown]
-# ---
+# The chorus is about **benchmarks**: a fixed public test set and a metric that everyone reports. ImageNet top-5 error, WMT14 BLEU, LAMBADA accuracy. Benchmarks are what let a field say "state of the art". They also have the weakness the song is about. A benchmark rewards whatever wins on it, and when everyone tunes against the same test set, it slowly turns into a validation set.
+
+
+
+# %% [markdown]
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 #
 # ### Checkpoint
 # 1. What are a parameter, a loss, and a gradient?

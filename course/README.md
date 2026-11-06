@@ -78,7 +78,7 @@ Each notebook was run top to bottom with nbconvert on an M1 Max with 64 GB. The 
 | Notebook | `laptop` on CPU (student mode) | `laptop` on MPS (student mode, committed) | `mac-max` on MPS (reference solutions) |
 |---|---|---|---|
 | `00_the_loop` | 10 s | 9 s | 10 s |
-| `01_one_line_then_many` | 2.7 min (CNN 68.5% vs HOG + SVM 55.8%) | 1.3 min (CNN 68.9% vs 55.8%) | 4.2 min (CNN 88.6% vs 56.5%) |
+| `01_one_line_then_many` | 2.7 min (CNN 67.5% vs HOG + SVM 55.8%) | 1.2 min (CNN 68.0% vs 55.8%) | 4.5 min (CNN 88.5% vs 56.5%) |
 | `02_sequences` | 4.1 min | 2.7 min | 9.8 min (GPT beats LSTM; both early-stopped) |
 | `03_generating_data` | 23 s | 23 s | 37 s |
 | `04_a_real_llm` | 4.7 min (DPO: 102 → 51 words) | 1.8 min (DPO: 102 → 40 words) | 3.6 min (DPO: 100 → 56 words) |

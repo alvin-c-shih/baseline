@@ -17,9 +17,18 @@ hardware_report()
 
 
 # %% [markdown]
-# ---
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 #
 # ## 5.1 Scale is all you need: a scaling law on your laptop
+
+
+
+# %%
+still(202.0)
+
+
+
+# %% [markdown]
 # Kaplan et al. (2020) trained hundreds of language models and found that loss falls as a smooth **power law** in model size N, data D and compute C, over seven orders of magnitude:
 #
 # $$L(N) \approx \left(\frac{N_c}{N}\right)^{\alpha_N} \quad (\alpha_N \approx 0.076) \qquad C \approx 6ND$$
@@ -27,11 +36,6 @@ hardware_report()
 # Chinchilla (2022) corrected the recipe: for a fixed compute budget, grow data as fast as parameters, at roughly 20 tokens per parameter.
 #
 # We'll train the same TinyGPT at several widths, on the same data and number of steps, and fit a power law with an irreducible floor: L = a·N^(−α) + c.
-
-
-
-# %%
-still(202.0)
 
 
 
@@ -114,7 +118,7 @@ still(211.64)
 
 
 # %% [markdown]
-# ---
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 #
 # ## 5.2 And you, attention: quadratic in the length
 # Self-attention compares every token with every other token: n² scores per head per layer. Double the context and the attention cost goes up 4×. FlashAttention (next section) fixes the *memory* traffic, not the *arithmetic*.
@@ -152,7 +156,7 @@ still(215.8)
 
 
 # %% [markdown]
-# ---
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 #
 # ## 5.3 FlashAttention tiles it all inside the SRAM
 # Standard attention computes the full n × n score matrix S = QKᵀ, writes it to GPU main memory (HBM), reads it back for the softmax, writes the result, and reads it again to multiply by V. For n = 32K that's 1 billion entries per head. The arithmetic is cheap. The **memory traffic** is the bottleneck.
@@ -286,19 +290,23 @@ still(183.0)
 
 
 # %% [markdown]
-# ---
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 #
 # ## 5.4 Context window: 2K, then a million tokens long
-# GPT-3 read 2,048 tokens at a time. Gemini 1.5 (2024) read a million. Longer context needed cheaper attention (above), better position encodings (RoPE with scaled frequencies), and long-document training data. But does a model actually *use* a long context?
-#
-# > **Predict first.** At the longest length your tier tries, will the model still find the password at every depth? Which depths are hardest?
-#
-# **Needle in a haystack**: hide one fact at some depth inside long filler text, then ask for it. Sweep context length × depth. Your tier's LLM and lengths are below. Wherever your model starts missing needles, that is the result.
 
 
 
 # %%
 still(189.77)
+
+
+
+# %% [markdown]
+# GPT-3 read 2,048 tokens at a time. Gemini 1.5 (2024) read a million. Longer context needed cheaper attention (above), better position encodings (RoPE with scaled frequencies), and long-document training data. But does a model actually *use* a long context?
+#
+# > **Predict first.** At the longest length your tier tries, will the model still find the password at every depth? Which depths are hardest?
+#
+# **Needle in a haystack**: hide one fact at some depth inside long filler text, then ask for it. Sweep context length × depth. Your tier's LLM and lengths are below. Wherever your model starts missing needles, that is the result.
 
 
 
@@ -340,7 +348,7 @@ still(191.68)
 
 
 # %% [markdown]
-# ---
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 #
 # ## 5.5 A linear-time successor, training up its strength
 # Recurrent models had a fixed-size state and O(n) cost. Their problems were sequential training and forgetting. A family of newer models brings the recurrence back in a form that trains in parallel: **linear attention**, **state-space models** (S4, Mamba), **RWKV**, and gated variants. The simplest is linear attention (Katharopoulos et al., 2020). Drop the softmax, use a positive feature map φ, and associativity lets you carry a d × d running state instead of all past keys:
@@ -405,9 +413,18 @@ still(220.45)
 
 
 # %% [markdown]
-# ---
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 #
 # ## 5.6 Every "all you need" becomes a footnote
+
+
+
+# %%
+still(224.0)
+
+
+
+# %% [markdown]
 # The song's four claims, each a paper with a date:
 #
 # | claim | paper | date | what replaced or absorbed it |
@@ -416,11 +433,6 @@ still(220.45)
 # | Depth is all you need | ResNet, He et al. | 2015-12-10 | the residual stream lives on in every Transformer |
 # | Attention's all you need | Transformer, Vaswani et al. | 2017-06-12 | still standing; hybrids with linear-time layers are rising |
 # | Scale is all you need | Scaling laws, Kaplan et al. | 2020-01-23 | Chinchilla's data-optimal scaling, then test-time compute |
-
-
-
-# %%
-still(224.0)
 
 
 
@@ -451,7 +463,7 @@ still(236.33)
 
 
 # %% [markdown]
-# ---
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 #
 # ### Checkpoint
 # 1. Chinchilla says about 20 tokens per parameter. Why are widely deployed models usually trained on far more?

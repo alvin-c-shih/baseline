@@ -19,7 +19,7 @@ hardware_report()
 
 
 # %% [markdown]
-# ---
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 #
 # ## 3.1 GANs played a two-player game
 # A **generative** model learns to produce new samples that look like the training data. Our "data" is 25 Gaussian blobs on a grid, the same 25 targets as the film's GAN court. Each blob is a **mode**, and a good generator should produce all 25.
@@ -76,9 +76,18 @@ still(122.9)
 
 
 # %% [markdown]
-# ---
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 #
 # ## 3.2 Diffusion learned to denoise in a thousand tiny steps
+
+
+
+# %%
+still(124.9)
+
+
+
+# %% [markdown]
 # **Diffusion models** (Sohl-Dickstein 2015; DDPM, Ho et al. 2020) have no adversary. Take a real sample and add a little Gaussian noise, 1,000 times, until it's pure noise. Then train one network on one boring regression task: *given a noisy sample and the step number t, predict the noise that was added*.
 #
 # $$x_t = \sqrt{\bar\alpha_t}\,x_0 + \sqrt{1-\bar\alpha_t}\,\epsilon \qquad L = \lVert \epsilon - \epsilon_\theta(x_t, t)\rVert^2$$
@@ -88,11 +97,6 @@ still(122.9)
 # ᾱ ("alpha bar") is just a schedule: a number that starts near 1 (almost no noise) and falls toward 0 (almost all noise) as t goes from 0 to 999. Every x_t is a blend of the clean point and fresh noise, with ᾱ_t setting the mix.
 #
 # > **Predict first.** The GAN covered a handful of modes. Will diffusion, trained for a similar time, cover more or fewer?
-
-
-
-# %%
-still(124.9)
 
 
 
@@ -177,7 +181,7 @@ print(f'DDPM: modes {modes_covered(frames[0])[0]}/25   vs   GAN: {gan_log[-1][2]
 
 
 # %% [markdown]
-# ---
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 #
 # ### Checkpoint
 # 1. In a GAN, what does the discriminator learn, and what does the generator learn?

@@ -19,7 +19,7 @@ hardware_report()
 
 
 # %% [markdown]
-# ---
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 #
 # ## 1.1 The perceptron draws a line (1958)
 
@@ -92,7 +92,7 @@ check('perceptron_step', perceptron_step)
 
 
 # %% [markdown]
-# ---
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 #
 # ## 1.2 Stack another hidden layer, and backpropagate
 # Put a layer of two units between input and output. Each hidden unit draws its own line. The output unit then combines those two lines, and a combination of lines can carve out shapes that one line can't.
@@ -164,7 +164,7 @@ check('xor_weights', xor_weights)
 
 
 # %% [markdown]
-# ---
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 #
 # ## 1.3 Sigmoid squashed the signal; ReLU clipped the negatives
 
@@ -223,17 +223,21 @@ still(19.5)
 
 
 # %% [markdown]
-# ---
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 #
 # ## 1.4 Every feature carved by hand (1999–2005)
-# Before 2012, computer vision meant **feature engineering**. Experts designed descriptors like SIFT (1999) and HOG (2005), histograms of edge directions in small cells, and fed them to a classifier such as an SVM. Then convolutional networks learned their own features from the pixels and beat them.
-#
-# Let's run that contest on CIFAR-10 (60,000 32×32 photos, 10 classes). The download is about 140 MB on first run.
 
 
 
 # %%
 still(27.01)
+
+
+
+# %% [markdown]
+# Before 2012, computer vision meant **feature engineering**. Experts designed descriptors like SIFT (1999) and HOG (2005), histograms of edge directions in small cells, and fed them to a classifier such as an SVM. Then convolutional networks learned their own features from the pixels and beat them.
+#
+# Let's run that contest on CIFAR-10 (60,000 32×32 photos, 10 classes). The download is about 140 MB on first run.
 
 
 
@@ -275,7 +279,7 @@ def hog(imgs_u8):
 
 
 # %% [markdown]
-# ---
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 #
 # ## 1.5 SVM: the widest margin, and the kernel trick
 # Among all lines that separate two classes, the **support vector machine** (Cortes & Vapnik, 1995) picks the one with the widest empty street on both sides. The points on the curbs are the **support vectors**. Only those points determine the line.
@@ -346,7 +350,7 @@ print(f'HOG + SVM test accuracy: {acc_hog:.1%}   (chance: 10%)')
 
 
 # %% [markdown]
-# ---
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 #
 # ## 1.6 Learned filters nobody planned (2012)
 # Now the 2012 recipe: let a convolutional network learn its own features from the pixels.
@@ -387,6 +391,8 @@ Ytr, Yte = torch.tensor(ytr), torch.tensor(yte)
 
 seed(0)
 cnn = make_cnn(CFG['cnn_width'], CFG['resnet']).to(DEVICE)
+with torch.no_grad():
+    cnn[0].weight.mul_(0.1)                                   # start conv1's filters small: see "Look at what it learned"
 print(f'CNN: {n_params(cnn):,} parameters')
 epochs, bs = CFG['cifar_epochs'], 128
 opt = torch.optim.AdamW(cnn.parameters(), lr=3e-3, weight_decay=5e-4)
@@ -418,7 +424,9 @@ print(f'\nHOG + SVM {acc_hog:.1%}   vs   CNN {acc_cnn:.1%}')
 
 # %% [markdown]
 # ### Look at what it learned
-# These are the CNN's first-layer filters: random noise before training (left) and after training (right). Nobody designed the edges and color blobs that appear on the right.
+# These are the CNN's first-layer filters: random noise before training (left) and after training (right). Each square is one 5×5 filter, its three input channels drawn as red, green and blue. Nobody designed the edges, stripes and color blobs that appear on the right.
+#
+# One detail makes them easier to see. The training cell started conv1's weights at a tenth of PyTorch's default size. The BatchNorm right after conv1 rescales its output anyway, so this changes nothing the network can compute; it only means less of the random starting pattern is left in the picture. At the default size, a few epochs leave the filters looking much like the left panel.
 
 
 
@@ -444,6 +452,47 @@ still(30.5)
 
 
 # %% [markdown]
+# ### What the filters respond to
+# A 5×5 square of colors is hard to read. It's easier to run a filter over a photo and see where it responds. HOG (§1.4) found edges with two hand-written filters: the difference between a pixel's right and left neighbors, which is large on vertical edges, and between the pixels below and above, which is large on horizontal ones. The cell below finds the learned filter whose brightness pattern (its three color channels added up) best matches a dark-to-light step in each of those two directions, then runs all four filters over one test photo.
+
+
+
+# %%
+def edge(theta, k):
+    """A k×k step from dark to light across the direction theta (degrees)."""
+    c = torch.arange(k) - k // 2
+    yy, xx = torch.meshgrid(c, c, indexing='ij')
+    return torch.tanh(2 * (xx * math.cos(math.radians(theta)) + yy * math.sin(math.radians(theta))))
+
+W1 = cnn[0].weight.detach().cpu()
+k = W1.shape[-1]
+B = W1.sum(1); B = B - B.mean((1, 2), keepdim=True)                     # each filter's brightness pattern
+
+def most_like(T):
+    """The learned filter whose brightness pattern best matches T. Dividing by the whole filter's size ranks mostly-color filters low."""
+    return ((B * T).sum((1, 2)).abs() / (W1.flatten(1).std(1) * T.norm())).argmax().item()
+
+img = Xte_u8[np.where(yte == 7)[0][0]]                                      # the first horse in the test set
+gray = torch.tensor(img.mean(-1) / 255, dtype=torch.float32)[None, None]    # HOG's input: brightness, 0 to 1
+dx = torch.tensor([[0., 0, 0], [-1, 0, 1], [0, 0, 0]])                      # HOG's gx from §1.4: right neighbor − left
+rows = [('vertical', dx, most_like(edge(0, k))), ('horizontal', dx.T, most_like(edge(90, k)))]
+
+fig, axs = plt.subplots(2, 5, figsize=(9.5, 4.4), layout='constrained')
+axs[0, 0].imshow(img); axs[0, 0].set_title('a test photo')
+for r, (name, hand, i) in enumerate(rows):
+    f = W1[i]; f = (f - f.min()) / (f.max() - f.min())
+    axs[r, 1].imshow(hand, cmap='gray', vmin=-1, vmax=1); axs[r, 1].set_title(f'HOG, by hand:\n{name} edges')
+    axs[r, 2].imshow(F.conv2d(gray, hand[None, None])[0, 0].abs(), cmap='gray_r'); axs[r, 2].set_title('its response')
+    axs[r, 3].imshow(f.permute(1, 2, 0), interpolation='nearest'); axs[r, 3].set_title(f'learned:\nfilter {i}')
+    axs[r, 4].imshow(F.conv2d(to_t(img[None]), W1[i:i + 1])[0, 0].abs(), cmap='gray_r'); axs[r, 4].set_title('its response')
+for a in axs.flat: a.axis('off')
+fig.suptitle('Edge detectors written by hand vs learned (dark = strong response)');
+
+
+
+# %% [markdown]
+# Each learned filter responds to the same edges as its hand-written counterpart: the legs light up for vertical edges, the back and belly for horizontal ones. Its response is a little blurrier, because it is 5×5 rather than 3 pixels across. Nobody wrote these filters. They appeared because finding edges helped reduce the loss, and the color blobs beside them do the job of the color thumbnail we had to bolt onto HOG by hand.
+#
 # **Why did deep nets win?** Both SVMs and CNNs are classifiers. The difference is who designs the representation. With an SVM, a human picks the features or the kernel. A CNN learns its representation from data, and keeps getting better as you add data and compute. With HOG features, more data stops helping much sooner.
 
 
@@ -454,7 +503,7 @@ still(36.03)
 
 
 # %% [markdown]
-# ---
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 #
 # ## 1.7 Depth is all you need: residual connections (2015)
 # If more layers mean richer re-representations, why not use 50 or 150? Because naive deep stacks are hard to optimize: the signal and gradient degrade layer by layer. **ResNet** (He et al., 2015) gave each block a shortcut, *output = x + f(x)*. A block only has to learn a *correction* to its input, and the gradient always has a clean path back through the `+`.
@@ -509,10 +558,9 @@ still(44.5)
 
 
 # %% [markdown]
-# ---
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 #
 # ## 1.8 Frozen on the shelf
-# By 2013 the kernel tricks and hand-made features were "frozen on the shelf": the network learned its own features. That pattern, a human-designed component replaced by a learned one, repeats through the rest of the song.
 
 
 
@@ -522,7 +570,12 @@ still(55.26)
 
 
 # %% [markdown]
-# ---
+# By 2013 the kernel tricks and hand-made features were "frozen on the shelf": the network learned its own features. That pattern, a human-designed component replaced by a learned one, repeats through the rest of the song.
+
+
+
+# %% [markdown]
+# <hr style="height:4px;border:0;background:#888;margin:2em 0 1em">
 #
 # ### Checkpoint
 # 1. Why can't a single perceptron learn XOR, and what does a hidden layer change?
