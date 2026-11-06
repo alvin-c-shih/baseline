@@ -37,6 +37,8 @@ uv sync
 uv run jupyter lab notebooks/
 ```
 
+The notebooks in the repo already hold the outputs of one `laptop`-tier run, plots and stills included, so you can read them on GitHub before installing anything. Your own numbers will differ a little.
+
 The first runs download the following:
 
 | What | Size | Used in |
@@ -71,22 +73,22 @@ BASELINE_TIER=laptop BASELINE_DEVICE=cpu uv run jupyter lab notebooks/
 
 ## Measured run times
 
-Each notebook was run top to bottom with nbconvert on an M1 Max with 64 GB. The `laptop` column was forced onto the CPU to show the slowest case; a laptop's GPU is faster. The `cuda` tier has not been run yet.
+Each notebook was run top to bottom with nbconvert on an M1 Max with 64 GB. The first `laptop` column was forced onto the CPU to show the slowest case. The second used the GPU, and its outputs are the ones committed. The `cuda` tier has not been run yet.
 
-| Notebook | `laptop` on CPU (student mode) | `mac-max` on MPS (reference solutions) |
-|---|---|---|
-| `00_the_loop` | 10 s | 10 s |
-| `01_one_line_then_many` | 2.7 min (CNN 68.5% vs HOG + SVM 55.8%) | 4.2 min (CNN 88.6% vs 56.5%) |
-| `02_sequences` | 4.1 min | 9.8 min (GPT beats LSTM; both early-stopped) |
-| `03_generating_data` | 23 s | 37 s |
-| `04_a_real_llm` | 4.7 min (DPO: 102 → 51 words) | 3.6 min (DPO: 100 → 56 words) |
-| `05_scale_and_long_context` | 2.2 min (needles 20/20 up to 2K) | 5.3 min (misses needles from 1K up) |
+| Notebook | `laptop` on CPU (student mode) | `laptop` on MPS (student mode, committed) | `mac-max` on MPS (reference solutions) |
+|---|---|---|---|
+| `00_the_loop` | 10 s | 10 s | 10 s |
+| `01_one_line_then_many` | 2.7 min (CNN 68.5% vs HOG + SVM 55.8%) | 1.4 min (CNN 68.9% vs 55.8%) | 4.2 min (CNN 88.6% vs 56.5%) |
+| `02_sequences` | 4.1 min | 2.8 min | 9.8 min (GPT beats LSTM; both early-stopped) |
+| `03_generating_data` | 23 s | 23 s | 37 s |
+| `04_a_real_llm` | 4.7 min (DPO: 102 → 51 words) | 1.8 min (DPO: 102 → 40 words) | 3.6 min (DPO: 100 → 56 words) |
+| `05_scale_and_long_context` | 2.2 min (needles 20/20 up to 2K) | 1.4 min (needles 20/20 up to 2K) | 5.3 min (misses needles from 1K up) |
 
 *Student mode* leaves every exercise unattempted, which proves no later cell depends on a student's answer. `BASELINE_SOLUTIONS=1` runs each exercise's reference solution through its tests instead. The first runs of M1, M2, M4 and M5 also include downloads.
 
 ## Editing
 
-- **Notebooks**: edit `notebooks/src/*.py` (jupytext percent format), then run `sh build_notebooks.sh` to regenerate `notebooks/*.ipynb` without outputs. `--execute` also runs each notebook as a test, writing the executed copies to `.cache/executed/`.
+- **Notebooks**: edit `notebooks/src/*.py` (jupytext percent format), then run `sh build_notebooks.sh --execute` to regenerate `notebooks/*.ipynb` and run each one top to bottom, which refreshes the committed outputs and doubles as a test (about 8 minutes on an M1 Max's GPU). It uses the `laptop` tier unless `BASELINE_TIER` says otherwise. Without `--execute` the notebooks are regenerated with no outputs.
 - **Site**: edit the modules, concepts and glossary in `site/content.py` (layout lives in `site/build.py`), then run `python3 site/build.py`. Mark glossary terms with `[[term]]` or `[[term|shown text]]`.
 - **Design decisions** and open questions: `DECISIONS.md`.
 - **Stills**: `site/stills/tSSS.ss.jpg` are 1600-px frames rendered from the film's engine. Re-render any of them with `python3 site/render_stills.py [times…]`, which reads `site/stills/captions.json`, including the two still-only liberties some entries use: `fovk` (a wider lens) and `sing` (a phrase re-timed to have just been sung). Their captions live in `site/stills/captions.json`, which both the notebooks and the site read.

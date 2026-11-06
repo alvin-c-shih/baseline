@@ -15,6 +15,7 @@ The tier is auto-detected. Override it before importing, or from the shell:
 from __future__ import annotations
 
 import contextlib
+import logging
 import math
 import os
 import platform
@@ -28,6 +29,10 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
+# Loading transformers imports torch.distributed, which on macOS warns that it can't redirect worker output.
+# Nothing here starts workers, so the warning is noise.
+logging.getLogger('torch.distributed.elastic.multiprocessing.redirects').setLevel(logging.ERROR)
 
 HERE = Path(__file__).resolve().parent
 COURSE = HERE.parent
@@ -186,9 +191,10 @@ def use_style() -> None:
 
 # ── stills from the film ───────────────────────────────────────────────────────────────────────────
 def still(t: float, caption: str | None = None, width: int = 720):
-    """Show the film's frame at song time t (seconds), captioned from site/stills/captions.json: where you are in the video."""
-    from IPython.display import HTML, display
-    import base64
+    """Show the film's frame at song time t (seconds), captioned from site/stills/captions.json: where you are in the video.
+    The frame is a plain image output and the caption a separate HTML output, so both survive viewers that strip
+    inline images from HTML (GitHub's notebook view)."""
+    from IPython.display import HTML, Image, display
     import json
     p = STILLS / f't{t:06.2f}.jpg'
     if not p.exists():
@@ -196,13 +202,11 @@ def still(t: float, caption: str | None = None, width: int = 720):
         return
     info = json.loads((STILLS / 'captions.json').read_text()).get(f'{t:.2f}', {})
     caption = caption or f"{info.get('scene', '')} · {info.get('c', '')}"
-    b = base64.b64encode(p.read_bytes()).decode()
     m, s = divmod(t, 60)
+    display(Image(data=p.read_bytes(), format='jpeg', width=width))
     display(HTML(
-        f'<figure style="margin:0 0 8px 0;max-width:{width}px">'
-        f'<img src="data:image/jpeg;base64,{b}" style="width:100%;border:1px solid {LINE}"/>'
-        f'<figcaption style="font:12px \'IBM Plex Mono\',monospace;color:{ASH};margin-top:4px">'
-        f'<a href="https://youtu.be/Qy3_4oXoS6c?t={int(t)}" style="color:{MAG}">{int(m)}:{s:05.2f}</a> · {caption}</figcaption></figure>'))
+        f'<p style="font:12px \'IBM Plex Mono\',monospace;color:{ASH};margin:2px 0 10px;max-width:{width}px">'
+        f'<a href="https://youtu.be/Qy3_4oXoS6c?t={int(t)}" style="color:{MAG}">▶ {int(m)}:{s:05.2f}</a> · {caption}</p>'))
 
 
 # ── downloads ──────────────────────────────────────────────────────────────────────────────────────

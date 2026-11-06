@@ -15,7 +15,7 @@ A record of what was decided for the *Baseline* ML course, and why, for later re
 
 - **The module pages are the "slides".** The course is a static HTML site (`site/`), plus one Jupyter notebook per module (`notebooks/`). There is no slide deck file. The user referred to the module pages as slides, and feedback on them is tracked below. *Open:* if an actual presentation deck is wanted for live teaching, generate it from `site/content.py`.
 - **Six notebooks instead of one.** The request said "a companion Jupyter notebook". It was split per module because a single notebook would be about 150 cells with roughly 20 minutes of CPU training top to bottom, hard to restart midway. Shared code lives in `notebooks/blcourse.py`.
-- **Source of truth:** `notebooks/src/*.py` (jupytext percent format) → `build_notebooks.sh` → `.ipynb`, committed without outputs. Site content lives in `site/content.py` and is rendered by `site/build.py`.
+- **Source of truth:** `notebooks/src/*.py` (jupytext percent format) → `build_notebooks.sh --execute` → `.ipynb`, committed **with the outputs of one `laptop`-tier run** (revised; they were committed empty). The site's LAB links open GitHub's notebook view, where an empty notebook shows no plots and no stills, so a reader couldn't see a lab without installing it. The `laptop` tier is the one most readers can reproduce. Stills are a plain image output plus a separate caption output, because GitHub's viewer drops images embedded in HTML output. Site content lives in `site/content.py` and is rendered by `site/build.py`.
 
 ## Reorder for learnability (from the content review)
 
@@ -151,7 +151,9 @@ After the reorder, all six notebooks were run top to bottom twice on an M1 Max w
 | M4 | 282 s ✓ (DPO 102 → 51 words) | 214 s ✓ (100 → 56 words; 3/3) |
 | M5 | 130 s ✓ (α ≈ 0.10; needles 20/20 up to 2K) | 319 s ✓ (floor ≈ 1.24; misses needles from 1K up; 2/2) |
 
-DPO's effect is a little smaller than before the reorder (it was 102 → 40): it now starts from a reset LoRA patch whose random A differs from a freshly added one. The site says "roughly halves".
+**Committed outputs** come from a third run: `laptop` tier on MPS, student mode, 8.4 min in all (M0 10 s, M1 82 s with CNN 68.9% vs 55.8%, M2 166 s, M3 23 s, M4 109 s with DPO 102 → 40 words, M5 81 s with needles 20/20 up to 2K). One stderr line was removed from three of them: torch's macOS-only "Redirects are currently not supported" warning, which `blcourse.py` now silences.
+
+DPO's effect varies with the hardware and the LoRA patch's random start (it is reset before DPO): 102 → 51 words on CPU, 102 → 40 on MPS, 100 → 56 on `mac-max`. The site says "roughly halve … to 40–55".
 
 - **`cuda` tier: not run.** No NVIDIA GPU was available. Its sizes are extrapolated, not measured. *Open:* run it once on a 12–24 GB card.
 - **Site:** checked at 1440 px and 375 px, with no horizontal scroll on any page, KaTeX rendering, and tooltips tested with mouse hover and touch tap. 155 glossary links, each at its term's first mention. Not tested: a real phone, or screen-reader output of the tooltips.
@@ -160,5 +162,5 @@ DPO's effect is a little smaller than before the reorder (it was 102 → 40): it
 
 1. Is an actual presentation deck wanted for live delivery, in addition to the site?
 2. Should the notebooks get hover definitions (`<abbr title>`) too?
-3. Should the site be published as a hosted page? It currently runs locally or from a repo checkout.
+3. ~~Should the site be published as a hosted page?~~ Resolved: GitHub Pages, from the fork (`.github/workflows/course-pages.yml`).
 4. Who runs the `cuda` tier check?
